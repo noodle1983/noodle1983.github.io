@@ -130,6 +130,289 @@
           <div id="js-content" class="content-ll">
             
   
+    <article id="post-putty-nd7.7" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2021/02/12/putty-nd7.7/">putty-nd7.7 release</a>
+    </h1>
+  
+
+        
+        <a href="/2021/02/12/putty-nd7.7/" class="archive-article-date">
+  	<time datetime="2021-02-12T01:58:53.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-02-12</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h3 id="1-Bugs"><a href="#1-Bugs" class="headerlink" title="1. Bugs"></a>1. Bugs</h3><h3 id="2-Other-changes"><a href="#2-Other-changes" class="headerlink" title="2. Other changes"></a>2. Other changes</h3><pre><code>1. support my extended rzsz-nd().
+ - sz/rz dir.
+ - support large file(&gt;4GB)
+ - check existing file&apos;s CRC and then resume/skip/retransmit if previous transfer is broke/completed/invalid.
+ - options to update client/server working direction
+</code></pre><h3 id="3-Ongoing"><a href="#3-Ongoing" class="headerlink" title="3. Ongoing"></a>3. Ongoing</h3><h3 id="4-Downloads"><a href="#4-Downloads" class="headerlink" title="4. Downloads"></a>4. Downloads</h3><p><a href="https://sourceforge.net/projects/putty-nd/files/old/putty_nd7.7.zip/download" target="_blank" rel="noopener">Sourceforge</a><br><a href="https://noodle1983.github.io/putty-nd/putty_nd7.7.zip" target="_blank" rel="noopener">Github</a></p>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">putty-nd</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2021/02/12/putty-nd7.7/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
+    <article id="post-rzsz-nd_README" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2021/02/12/rzsz-nd_README/">rzsz-nd_README</a>
+    </h1>
+  
+
+        
+        <a href="/2021/02/12/rzsz-nd_README/" class="archive-article-date">
+  	<time datetime="2021-02-12T01:58:50.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-02-12</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="1-Overview"><a href="#1-Overview" class="headerlink" title="1. Overview"></a>1. Overview</h1><p>As well-known, <a href="https://ohse.de/uwe/software/lrzsz.html" target="_blank" rel="noopener">lrzsz</a> is a very handy tool to transfer files along with the existing terminal. It is so convenient that after I implemented the ZMODEM feature in <a href="https://noodle1983.github.io/tags/putty-nd" target="_blank" rel="noopener">putty-nd</a>, I seldom use other tools to transfer files.</p>
+<p>Then, why do I make another implementation of it? Well, as a user, I have a lot of thinking, like what if it can blablabla or why can’t it be blablabla. Those thinking keep following me and someday I couldn’t stand for it and downloaded its source code. Sadly I gave up before I got drowned in the source code(Sorry to say that, it is my problem). And the worst thing is, this happened again and again. To get out of this dilemma, I decide to re-implement it again.</p>
+<p>I have some tools on hand, the FSM and the multi-jobs Processor in C++. So it is written in C++. I have written build scripts in plain Makefile, so it is not autoconf. It is a utility tool, which means it must not occupy lots of resources from the other logical server. So it is a single thread.</p>
+<p>As it is a long time after the ZMODEM protocol was invented, rzsz-nd starts from a basic feature, which is sending/receiving plain file in ZMODEM, without any conversion and encryption. For the other features in ZMODEM or YMODEM/XMODEM, will be gone with the wind if no one bring it back in the future. I have implemented some more features and protocol extensions, which are detailed in the following chapter.</p>
+<h1 id="2-Features"><a href="#2-Features" class="headerlink" title="2. Features"></a>2. Features</h1><h2 id="2-1-Normal-Zmodem-Workflow"><a href="#2-1-Normal-Zmodem-Workflow" class="headerlink" title="2.1. Normal Zmodem Workflow"></a>2.1. Normal Zmodem Workflow</h2><p>The original ZMODEM protocol is available via the <a href="http://gallium.inria.fr/~doligez/zmodem/zmodem.txt" target="_blank" rel="noopener">link</a> or <a href="https://github.com/noodle1983/rzsz-nd/blob/main/doc/zmodem.md" target="_blank" rel="noopener">the markdown version</a>. And the simple workflow comes follows.</p>
+<h3 id="sz-workflow"><a href="#sz-workflow" class="headerlink" title="sz workflow"></a>sz workflow</h3><pre class="mermaid">sequenceDiagram
+participant client
+participant server
+server->>client: ZRQINIT
+client->>server: ZRINIT
+server->>client: ZFILE
+client->>server: ZRPOS
+
+server->>client: ZDATA(ZCRCG... ZCRCE)
+server->>client: ZEOF
+client->>server: ZRINIT
+
+server->>client: FIN
+client->>server: FIN</pre>
+
+<h3 id="rz-workflow"><a href="#rz-workflow" class="headerlink" title="rz workflow"></a>rz workflow</h3><pre class="mermaid">sequenceDiagram
+participant client
+participant server
+server->>client: ZRINIT
+client->>server: ZFILE
+server->>client: ZRPOS
+client->>server: ZDATA(ZCRCG... ZCRCE)
+client->>server: ZEOF
+server->>client: ZRINIT
+client->>server: ZCOMPL
+client->>server: FIN
+server->>client: FIN</pre>
+
+<h1 id="2-2-sz-rz-directory"><a href="#2-2-sz-rz-directory" class="headerlink" title="2.2 sz/rz directory"></a>2.2 sz/rz directory</h1><p>The feature is already supported in the ZMODEM protocol. I just send the relative path of the file as its filename. The server/client check the ‘/‘ character and make the directory. However, the empty directory is ignored at the moment.</p>
+<h3 id="sz-workflow-1"><a href="#sz-workflow-1" class="headerlink" title="sz workflow"></a>sz workflow</h3><pre class="mermaid">sequenceDiagram
+participant client
+participant server
+server->>client: ZRQINIT
+loop each file
+    client->>server: ZRINIT
+    server->>client: ZFILE
+    client->>server: ZRPOS
+
+    server->>client: ZDATA(ZCRCG... ZCRCE)
+    server->>client: ZEOF
+end
+server->>client: FIN
+client->>server: FIN</pre>
+
+
+<h3 id="rz-workflow-1"><a href="#rz-workflow-1" class="headerlink" title="rz workflow"></a>rz workflow</h3><pre class="mermaid">sequenceDiagram
+participant client
+participant server
+server->>client: ZRINIT
+loop each file
+    client->>server: ZFILE
+    server->>client: ZRPOS
+    client->>server: ZDATA(ZCRCG... ZCRCE)
+    client->>server: ZEOF
+    server->>client: ZRINIT
+end
+client->>server: ZCOMPL
+client->>server: FIN
+server->>client: FIN</pre>
+
+<h1 id="2-large-file-gt-4-GB"><a href="#2-large-file-gt-4-GB" class="headerlink" title="2. large file(&gt;4 GB)"></a>2. large file(&gt;4 GB)</h1><p>The file cursor position in ZMODEM protocol message(ZRPOS/ZDATA/ZACK/ZEOF) is defined as 4 bytes, which limits the file size max to 4 GB. In order to achieve this feature, a 64bit binary frame with CRC32 is defined. When the cursor position is larger than 4 GB, the 64bit binary frame will be used while the rest is as it was.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">#define ZBIN64 &apos;D&apos;</span><br><span class="line">struct frame64_tag&#123;</span><br><span class="line">    unsigned char type;</span><br><span class="line">    unsigned char flag[8];</span><br><span class="line">    uint32_t crc;</span><br><span class="line">&#125;;</span><br><span class="line">typedef struct frame64_tag frame64_t;</span><br></pre></td></tr></table></figure></p>
+<h1 id="3-resume-the-transmission"><a href="#3-resume-the-transmission" class="headerlink" title="3. resume the transmission"></a>3. resume the transmission</h1><p>2 extra messages ZCOMMAND(ZCOMMAND_CHECK_LEN) and ZACK(pos) are involved.</p>
+<h3 id="sz-workflow-2"><a href="#sz-workflow-2" class="headerlink" title="sz workflow"></a>sz workflow</h3><pre class="mermaid">sequenceDiagram
+participant client
+participant server
+server->>client: ZRQINIT
+client->>server: ZRINIT
+server->>client: ZFILE
+
+opt file exist on client
+    Note left of client: calc the CRC32 of the existing the file content.
+    client->>server: ZCOMMAND_CHECK_LEN(CRC32, len)
+    Note right of server: verify the CRC32 of the file heading content in len length. ack with the same length if ok, otherwise 0. 
+    server->>client: ZACK(len)
+end
+Note left of client: start transmitting at the responsed length or 0.
+client->>server: ZRPOS(len)
+server->>client: ZDATA(ZCRCG... ZCRCE)
+server->>client: ZEOF
+client->>server: ZRINIT
+server->>client: FIN
+client->>server: FIN</pre>
+
+<h3 id="rz-workflow-2"><a href="#rz-workflow-2" class="headerlink" title="rz workflow"></a>rz workflow</h3><pre class="mermaid">sequenceDiagram
+participant client
+participant server
+server->>client: ZRINIT
+client->>server: ZFILE
+opt file exist on client
+    Note right of server: calc the CRC32 of the existing the file content.
+    server->>client: ZCOMMAND_CHECK_LEN
+
+    Note left of client: verify the CRC32 of the file heading content in len length. ack with the same length if ok, otherwise 0. 
+    client->>server: ZACK(len)
+end
+Note right of server: start transmitting at the responsed length or 0.
+server->>client: ZRPOS(len)
+client->>server: ZDATA(ZCRCG... ZCRCE)
+client->>server: ZEOF
+server->>client: ZRINIT
+client->>server: ZCOMPL
+client->>server: FIN
+server->>client: FIN</pre>
+
+<h1 id="4-update-working-direction"><a href="#4-update-working-direction" class="headerlink" title="4. update working direction"></a>4. update working direction</h1><p>The options are added to update client/server working direction, and preset the rz files to avoid the file selection. Please refer to the usage chapter for the details.</p>
+<h1 id="5-How-to-build"><a href="#5-How-to-build" class="headerlink" title="5. How to build"></a>5. How to build</h1><p>Type make to build release version. And make install to install it to /usr/local/bin.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">make</span><br><span class="line">make install</span><br></pre></td></tr></table></figure></p>
+<p>Type make debug to build a debug version.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">make debug</span><br></pre></td></tr></table></figure></p>
+<h1 id="6-Usage"><a href="#6-Usage" class="headerlink" title="6. Usage"></a>6. Usage</h1><h3 id="sz"><a href="#sz" class="headerlink" title="sz"></a>sz</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line">[ludong@VM-0-17-centos rzsz-nd]$ ./sz --help</span><br><span class="line"></span><br><span class="line">USAGE:</span><br><span class="line"></span><br><span class="line">   ./sz  [-s &lt;directory path&gt;] [-c &lt;directory path&gt;] [-l &lt;filename&gt;] [-d</span><br><span class="line">         &lt;int:0-5&gt;] [--] [--version] [-h] &lt;string[]&gt; ...</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Where:</span><br><span class="line"></span><br><span class="line">   -s &lt;directory path&gt;,  --server-working-dir &lt;directory path&gt;</span><br><span class="line">     Depending on ZVERSION:1, set the working directory on the server side.</span><br><span class="line">     It is current directory if not set.</span><br><span class="line"></span><br><span class="line">   -c &lt;directory path&gt;,  --client-working-dir &lt;directory path&gt;</span><br><span class="line">     Depending on ZVERSION:1, set the working directory on the client side.</span><br><span class="line">     It is desktop if not set.</span><br><span class="line"></span><br><span class="line">   -l &lt;filename&gt;,  --log &lt;filename&gt;</span><br><span class="line">     File to log</span><br><span class="line"></span><br><span class="line">   -d &lt;int:0-5&gt;,  --debug &lt;int:0-5&gt;</span><br><span class="line">     set debug level. 0: TRACE; 1: DEBUG; 2: INFO; 3: WARN; 4: ERROR; 5:</span><br><span class="line">     FATAL;</span><br><span class="line"></span><br><span class="line">   --,  --ignore_rest</span><br><span class="line">     Ignores the rest of the labeled arguments following this flag.</span><br><span class="line"></span><br><span class="line">   --version</span><br><span class="line">     Displays version information and exits.</span><br><span class="line"></span><br><span class="line">   -h,  --help</span><br><span class="line">     Displays usage information and exits.</span><br><span class="line"></span><br><span class="line">   &lt;string[]&gt;  (accepted multiple times)</span><br><span class="line">     (required)  files to sent</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">   Send file(s) with ZMODEM protocol.</span><br></pre></td></tr></table></figure>
+<hr>
+<h3 id="rz"><a href="#rz" class="headerlink" title="rz"></a>rz</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line">[ludong@VM-0-17-centos rzsz-nd]$ ./rz --help</span><br><span class="line"></span><br><span class="line">USAGE:</span><br><span class="line"></span><br><span class="line">   ./rz  [-f] [-p &lt;directory/file path&gt;] [-s &lt;directory path&gt;] [-c</span><br><span class="line">         &lt;directory path&gt;] [-l &lt;filename&gt;] [-d &lt;int:0-5&gt;] [--] [--version]</span><br><span class="line">         [-h]</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Where:</span><br><span class="line"></span><br><span class="line">   -f,  --rz-folder-mode</span><br><span class="line">     rz folder mode, make client to select folder.</span><br><span class="line"></span><br><span class="line">   -p &lt;directory/file path&gt;,  --preset-files &lt;directory/file path&gt;</span><br><span class="line">     Depending on ZVERSION:1, preset rz files splited by &apos;#&apos; to skip file</span><br><span class="line">     selection</span><br><span class="line"></span><br><span class="line">   -s &lt;directory path&gt;,  --server-working-dir &lt;directory path&gt;</span><br><span class="line">     Depending on ZVERSION:1, set the working directory on the server side.</span><br><span class="line">     It is current directory if not set.</span><br><span class="line"></span><br><span class="line">   -c &lt;directory path&gt;,  --client-working-dir &lt;directory path&gt;</span><br><span class="line">     Depending on ZVERSION:1, set the working directory on the client side.</span><br><span class="line">     It is desktop if not set.</span><br><span class="line"></span><br><span class="line">   -l &lt;filename&gt;,  --log &lt;filename&gt;</span><br><span class="line">     File to log</span><br><span class="line"></span><br><span class="line">   -d &lt;int:0-5&gt;,  --debug &lt;int:0-5&gt;</span><br><span class="line">     set debug level. 0: TRACE; 1: DEBUG; 2: INFO; 3: WARN; 4: ERROR; 5:</span><br><span class="line">     FATAL;</span><br><span class="line"></span><br><span class="line">   --,  --ignore_rest</span><br><span class="line">     Ignores the rest of the labeled arguments following this flag.</span><br><span class="line"></span><br><span class="line">   --version</span><br><span class="line">     Displays version information and exits.</span><br><span class="line"></span><br><span class="line">   -h,  --help</span><br><span class="line">     Displays usage information and exits.</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">   Receive file(s) with ZMODEM protocol.</span><br></pre></td></tr></table></figure>
+<h1 id="7-License"><a href="#7-License" class="headerlink" title="7. License"></a>7. License</h1><p>Except for extra permissions from Dong Lu(<a href="mailto:noodle1983@126.com" target="_blank" rel="noopener">noodle1983@126.com</a>), this software is released under version 3 of the GNU General Public License (GPLv3).</p>
+<h3 id="other-modules"><a href="#other-modules" class="headerlink" title="other modules"></a>other modules</h3><table>
+<thead>
+<tr>
+<th>module</th>
+<th>license</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="http://tclap.sourceforge.net/" target="_blank" rel="noopener">tclap</a></td>
+<td>MIT License</td>
+</tr>
+</tbody>
+</table>
+<h1 id="8-Support"><a href="#8-Support" class="headerlink" title="8. Support"></a>8. Support</h1><p><a href="https://github.com/noodle1983/rzsz-nd/issues" target="_blank" rel="noopener">Github</a></p>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">putty-nd</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2021/02/12/rzsz-nd_README/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-putty-nd7.6" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
@@ -826,217 +1109,9 @@
 
 
   
-    <article id="post-framework-nd_network_model" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2019/01/01/framework-nd_network_model/">framework-nd之网络模型</a>
-    </h1>
-  
-
-        
-        <a href="/2019/01/01/framework-nd_network_model/" class="archive-article-date">
-  	<time datetime="2019-01-01T13:32:10.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-01-01</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h1 id="1-背景"><a href="#1-背景" class="headerlink" title="1. 背景"></a>1. 背景</h1><p>框架背景见<a href="https://noodle1983.github.io/2019/01/01/framework-nd_thread_model/" target="_blank" rel="noopener">上篇</a>。</p>
-<p>网络框架的设计参考了python的异步框架<a href="https://twistedmatrix.com/trac/" target="_blank" rel="noopener">twisted</a>。</p>
-<p>笔者对同步和异步性能的认识源于还在爱立信的两个项目，第一个项目是同步的，2-3k的tps，性能压不上去，客户端您随便加压力，我服务端就不理你，就这种；第二个项目是异步的，1w的tps，实验室环境在瑞典，一直没机会玩玩。但笔者因为是研发中心支持，在一线人员配合下能直接登录上生成环境，最惨烈的一次是阿三的服务器，就看着内存一直在涨，5分钟一挂…您没听错，就是5分钟一挂，提单的严重级别是中级，要放国内早爆了…除了升级扩容别无他法。当时就感叹，异步没有压不爆的机器。</p>
-<p>鉴于此，笔者当时看了挺多异步的设计，twisted是印象最深的一个。接着用python写一个自己的python测试框架<a href="https://github.com/noodle1983/pythontest" target="_blank" rel="noopener">pythontest</a>, 但一直都没派上用场。framework-nd的网络模型其实就是pythontest的c++版。但笔者的python仅限于东拼西凑，答不出所以然。</p>
-<h1 id="2-设计"><a href="#2-设计" class="headerlink" title="2. 设计"></a>2. 设计</h1><p>写网络框架的人，应该都看过《unix网络编程》，也知道平台差异性。笔者选用libevent1（2的设计比较复杂，没用）去封装平台差异，socket的读写按边缘触发处理。</p>
-<p><img src="https://github.com/noodle1983/private/raw/master/CommonBlog/framework-nd_net.png" alt="class_model"></p>
-<ul>
-<li>Reactor 独占一线程，跑event_base_dispatch。提供接口，监听socket的事件。</li>
-<li>TcpServer 新建监听端口，将新连接和上层处理逻辑处理初始化成SocketConnection。</li>
-<li>SocketConnection 维护已连接的socket，负责异步读写socket，读写各维护一队列。并将网络事件上报给Protocol。</li>
-<li>IProtocol 负责TcpServer的配置和处理网络事件。其主要从网络流（SocketConnection的读缓存）中解析出消息体，或将消息体写入SocketConnection的写缓存。</li>
-<li>TcpClient负责connect之前的逻辑，connect之后生成SocketConnection，逻辑交由SocketConnection维护，连接断开后负责重连。TcpClient设想支持多个连接，但是没有这样的需求就没实现。<br>以上类除了Reactor，其他类初始化参数均包含一线程组引用，按调试需要，可以用不同的线程组初始化，也可以用相同的线程组初始化。通知事件跑在原线程，事件的处理跑在线程组socket fd对应线程。</li>
-</ul>
-<p>恩， 好像完了？大的部分好像真的完了，但是细节都在代码里。例如做了流控，即接收缓存在高水位，则不再从socket读取，滑动窗口协议会导致客户端不再发送，知道接收队列被处理至正常水平，防止服务器被输入压垮了。</p>
-<p>另外，这玩意还是很考验多线程调试技巧的。</p>
-<h1 id="3-举个例子吧"><a href="#3-举个例子吧" class="headerlink" title="3. 举个例子吧"></a>3. 举个例子吧</h1><p>EchoServer是这么启的，telnetServer是管理端口。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">Processor::BoostProcessor processor(&quot;NetProcessor&quot;, 4);</span><br><span class="line">processor.start();</span><br><span class="line">Net::Reactor::Reactor reactor;</span><br><span class="line">Net::Protocol::EchoProtocol echoProtocol(&amp;reactor, &amp;processor);</span><br><span class="line">Net::Protocol::TelnetProtocol telnetProtocol(Processor::BoostProcessor::manInstance());</span><br><span class="line">Net::Server::TcpServer server(&amp;echoProtocol, &amp;reactor, &amp;processor);</span><br><span class="line">Net::Server::TcpServer telnetServer(&amp;telnetProtocol, &amp;reactor, &amp;processor);</span><br><span class="line">server.start();</span><br><span class="line">telnetServer.start();</span><br><span class="line">reactor.start();</span><br><span class="line"></span><br><span class="line">boost::unique_lock&lt;boost::mutex&gt; lock(closedMutexM);</span><br><span class="line">while(!closed)</span><br><span class="line">&#123;</span><br><span class="line">    closedCondM.wait(lock);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">processor.stop();</span><br><span class="line">reactor.stop();</span><br><span class="line">LOG_DEBUG(&quot;EchoServer stopped.&quot;);</span><br></pre></td></tr></table></figure>
-<h1 id="4-后记"><a href="#4-后记" class="headerlink" title="4. 后记"></a>4. 后记</h1><p><a href="https://sourceforge.net/projects/putty-nd/" target="_blank" rel="noopener">putty-nd</a>同步session数据到Google Drive，需要启一HttpServer配合Google账号的验证，对这套框架略有修改。加力之后代码段增加得不多，还是很小巧的。</p>
-
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">server framework</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2019/01/01/framework-nd_network_model/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
-    <article id="post-framework-nd_thread_model" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2019/01/01/framework-nd_thread_model/">framework-nd之线程模型</a>
-    </h1>
-  
-
-        
-        <a href="/2019/01/01/framework-nd_thread_model/" class="archive-article-date">
-  	<time datetime="2019-01-01T03:32:10.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-01-01</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h1 id="1-背景"><a href="#1-背景" class="headerlink" title="1. 背景"></a>1. 背景</h1><p>笔者出道于爱立信，电信行业，回想这么多年技术或管理上所用的技巧，思想多源于斯，深有感触。在爱立信还是有些狗屎运的，曾于项目青黄不接时独立维护一个AAAServer，熟悉了内存分配器，把该server的内存按得纹丝不动；然后又在一个全球化的网关产品中做PLM，能纵览其异步io+任务式线程组+javascript的设计。但项目中接触到的框架都是现成的，临渊羡鱼不如退而结网，自己也在开始将认识写成代码，即<a href="https://github.com/noodle1983/framework-nd" target="_blank" rel="noopener">framework-nd</a>。只是没有需求，怎知其可堪一用？</p>
-<p>机会还是来了，即我的第二份工作（加薪30%，如果各种福利一起算，实际只加了几百，如果不是因为这是个机会，估计留不下来，从大平台跳出来，请慎重），当时是要做信令和HTTP流量分析平台，一组人负责解析信令，我一人负责HTTP流量解析（当时https用得不多，不然就歇菜了），信令组需要记录的关键字段发给我，我将其和同时段相应的HTTP的请求/响应的关键字段汇总成一条话单，写文件，待后续分析。然后这个框架就用上了，解决了无数的问题后，在惠州移动上线了，日处理数据约1.5TB/日（我们用TAP设备抓了一天的包，1.5TB，内部拿这1.5T文件测试，千兆网卡带宽压到80%～90%之间，cpu和内存的相关数据时间太久就不记得）。第二次上线信令组也用了这套线程框架。</p>
-<p>后来这个框架经过适当的改造，应用于我的工具<a href="http://sourceforge.net/projects/putty-nd/" target="_blank" rel="noopener">putty-nd</a>中(zmodem和同步Google Drive的本地服务器)。</p>
-<h1 id="2-设计思路"><a href="#2-设计思路" class="headerlink" title="2. 设计思路"></a>2. 设计思路</h1><p>其实大家都知道，要使系统CPU达到最大的利用率，全局活跃线程数应等于逻辑CPU个数，这样CPU没有切换的开销，负载达到CPU个数，刚好吃饱。</p>
-<p>这是条基本规则，现实中会有些变化。</p>
-<ul>
-<li>CPU个数有限，如何让有限的线程执行各种不同的任务。</li>
-<li>纯CPU计算可以让CPU忙起来，但是同步的调用，如Oracle的访问接口，或者需要同步的系统调用（日志）会让线程挂起，导致CPU释放，如果没其他活跃的线程，CPU就闲下来了。</li>
-<li>锁/同步都会让线程挂起，如何最大限度地减少这种可能性。</li>
-</ul>
-<p>结合之前的经验，做了下面的设计。</p>
-<ul>
-<li>针对第一个问题，用命令模式，将不同的处理函数和数据用boost::bind封装成boost::function<void (*)()="">，提交各自线程的处理队列，线程仅需处理这个队列。这样一个线程即可以进行多任务处理。</void></li>
-<li>第二个问题，线程分组。纯CPU计算的任务和会让CPU挂起的任务分属不同的组（按需求可以再细分），组内线程地位平等，数量可调。提交处理任务是向线程组提交，提交接口包含一session_id，线程组按此session_id分配到线程处理（取余），这样线程组可以保证同一id的任务会按顺序先后在同一线程处理。</li>
-<li>第三个问题，创造单线程环境。按逻辑，需要先后处理的各个任务可由逻辑层归为一个session，并分配id，同一session_id的任务按session_id像线程组提交，线程组保证这个会话的任务在同一线程先后处理。会话可能有多个在多个线程触发事件源，但其向线程组提交后在线程的任务队列中串行化，其处理任务不用加锁。</li>
-<li>对队列加锁，尽量不对一大块逻辑操作加锁。如任务队列需要加锁，session的自增id需要加锁。存储session的集合可以定义和处理线程数内相同的个数，在线程启动前初始化好，分别访问避免加锁。也可以用Thread Local Storage，但这种设计有点侵入性，笔者未采用。</li>
-</ul>
-<p>在调试中发现session的任务可能会在错误的线程处理，因此加入了一些防错的校验。</p>
-<p>在后来的调优中，发现如果各个线程共享系统的定时器队列，输入在100Mbit/s时达到处理的瓶颈。因为会话需要同步各个输入，用到了大量的定时器，因此改在线程上用最小堆实现了会话的定时器管理。因为同一会话的处理都在同一线程，避免了定时器任务的加锁，顺利跨过这个坎，使输入达到网卡带宽的80%～90%时，仍能稳定处理。</p>
-<p>实践发现的一些冗余的设计：对队列设计了池子，但对tcmalloc这种现代分配器，对比发现完全看不出有任何优化。也就是说，无初始化负担仅是内存池子的设计，可以完全交给内存分配器。</p>
-<h1 id="3-实现"><a href="#3-实现" class="headerlink" title="3. 实现"></a>3. 实现</h1><p>有设计的蓝图，实现就不难了，<a href="https://github.com/noodle1983/framework-nd/tree/pthread/Processor" target="_blank" rel="noopener">链接</a>。</p>
-<p>主要有两个类，Boost的版本，实现还有Pthread的版本，不知道丢哪去了，简单改几个东西， 不麻烦。</p>
-<ul>
-<li>BoostProcessor，线程组，组内线程接口不对外开放，只能用一带session id的接口向线程组提交任务。</li>
-<li>BoostWorker，线程的处理函数，处理任务队列和定时器队列。</li>
-<li>ProcessorSensor，监控线程任务队列数量，如果处理不过来，任务数量会堆积，内存就上去了。</li>
-</ul>
-<h1 id="3-1-外部接口"><a href="#3-1-外部接口" class="headerlink" title="3.1 外部接口"></a>3.1 外部接口</h1><p>对外提供的接口有三类。</p>
-<ul>
-<li>BoostProcessor（线程组）构造函数和析构函数</li>
-<li>线程启停</li>
-<li>提交任务和Timer</li>
-</ul>
-<h1 id="3-1-1-BoostProcessor构造函数和析构函数。"><a href="#3-1-1-BoostProcessor构造函数和析构函数。" class="headerlink" title="3.1.1. BoostProcessor构造函数和析构函数。"></a>3.1.1. BoostProcessor构造函数和析构函数。</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">BoostProcessor(const unsigned theThreadCount);</span><br><span class="line">BoostProcessor(const std::string&amp; theName, const unsigned theThreadCount);</span><br><span class="line">~BoostProcessor();</span><br></pre></td></tr></table></figure>
-<p>构造函数除了数量，还有一个带名字的。方便知道是哪组线程发生了堆积。<strong>其实建议用<a href="http://man7.org/linux/man-pages/man3/pthread_setname_np.3.html" target="_blank" rel="noopener">pthread_setname_np</a>为每个线程都设个名字</strong>，这样用Top命令就能看到各个线程的cpu负载情况。<br><img src="https://github.com/noodle1983/private/raw/master/CommonBlog/thread_name.png" alt=""></p>
-<h1 id="3-1-2-start-stop线程"><a href="#3-1-2-start-stop线程" class="headerlink" title="3.1.2. start/stop线程"></a>3.1.2. start/stop线程</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">void start();</span><br><span class="line">void waitStop();</span><br><span class="line">void stop();</span><br></pre></td></tr></table></figure>
-<h1 id="3-1-3-提交任务和Timer"><a href="#3-1-3-提交任务和Timer" class="headerlink" title="3.1.3. 提交任务和Timer"></a>3.1.3. 提交任务和Timer</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">struct event* addLocalTimer(</span><br><span class="line">                const unsigned long long theId, </span><br><span class="line">				const struct timeval&amp; theInterval, </span><br><span class="line">				event_callback_fn theCallback,</span><br><span class="line">				void* theArg);</span><br><span class="line">inline void cancelLocalTimer(</span><br><span class="line">        const unsigned long long theId, </span><br><span class="line">        struct event*&amp; theEvent);</span><br><span class="line"></span><br><span class="line">int process(</span><br><span class="line">        const unsigned long long theId, </span><br><span class="line">        void (*theFunc)());;</span><br></pre></td></tr></table></figure>
-<p>Timer放在线程上的原因说过了。<br>看了一下，最新代码的任务还是带了池子的版本，用了大量的模板，导致执行文件过大，性能上没提升，这是一个不太成功的实践。直接用boost::function简化就行了。</p>
-<h1 id="3-2-线程的实现"><a href="#3-2-线程的实现" class="headerlink" title="3.2. 线程的实现"></a>3.2. 线程的实现</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">void BoostWorker::run()</span><br><span class="line">&#123;</span><br><span class="line">    initThreadAttr();</span><br><span class="line">    IJob* job;</span><br><span class="line">    while (!isToStopM)</span><br><span class="line">    &#123;</span><br><span class="line">        //handle Job</span><br><span class="line">        if (0 &lt; bufferJobQueueM.getn((char*)&amp;job, sizeof(IJob*)))</span><br><span class="line">        &#123;</span><br><span class="line">            (*job)();</span><br><span class="line">            job-&gt;returnToPool();</span><br><span class="line">            job = NULL;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        //handle timer</span><br><span class="line">        handleLocalTimer();</span><br><span class="line"></span><br><span class="line">		if (!bufferJobQueueM.empty())</span><br><span class="line">		&#123;</span><br><span class="line">			continue;</span><br><span class="line">		&#125;</span><br><span class="line">        else if (!isToStopM &amp;&amp; bufferJobQueueM.empty() &amp;&amp; !min_heap_empty(&amp;timerHeapM))</span><br><span class="line">        &#123;</span><br><span class="line">            boost::unique_lock&lt;boost::mutex&gt; queueLock(queueMutexM);</span><br><span class="line">            queueCondM.timed_wait(queueLock, </span><br><span class="line">                    boost::posix_time::from_time_t(timeNowM.tv_sec) </span><br><span class="line">                        + boost::posix_time::microseconds(timeNowM.tv_usec + 500));</span><br><span class="line">        &#125;</span><br><span class="line">        else</span><br><span class="line">        &#123;</span><br><span class="line">            boost::unique_lock&lt;boost::mutex&gt; queueLock(queueMutexM);</span><br><span class="line">            while (!isToStopM &amp;&amp; bufferJobQueueM.empty() &amp;&amp; min_heap_empty(&amp;timerHeapM))</span><br><span class="line">            &#123;</span><br><span class="line">                queueCondM.wait(queueLock); </span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>bufferJobQueueM是读写分离的一个数据结构，因为读取只有一个线程，所以没有锁（改天开篇讲）。</p>
-<p>定时器队列用的是libevent的最小堆，小巧，提供了删除的接口。</p>
-<p>处理完任务后，如果还有任务要处理，则继续处理，如果还有定时时间，time_wait 500微秒（0.5ms，定时器精度就是这个了），否则直接wait。只要有wait，CPU就被释放了，要么timeout切回来，要么新任务有signal唤醒。有人说线程的切换至少要耗时10ms，笔者有印象这应该是出自某本经典的书，说内核的时间片算法最小单位大约10ms。后来再查了一下，这时间片算法单位应该是和频率有关，10ms应该是书作者写书时的数据，算算下应该是上世纪的事情了。</p>
-<p>其他就不贴了。代码都在<a href="https://github.com/noodle1983/framework-nd/tree/pthread/Processor" target="_blank" rel="noopener">github</a>上。</p>
-<h1 id="4-后记"><a href="#4-后记" class="headerlink" title="4. 后记"></a>4. 后记</h1><p>在游戏行业的时候，因为帧循环是单线程处理的，曾有想法引入线程组，按场景id分线程去处理。当时最大的问题是32bit程序内存受限，n个线程n个lua vm，配置表得n份，太占内存。因为够用，程序人少事多，晃着晃着就过去了。</p>
-
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">server framework</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2019/01/01/framework-nd_thread_model/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
   
     <nav id="page-nav">
-      <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="extend next" rel="next" href="/page/2/">Next &raquo;</a>
+      <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><a class="extend next" rel="next" href="/page/2/">Next &raquo;</a>
     </nav>
   
 
@@ -1137,15 +1212,19 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">Unity iOS build</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color2">server</a>
               </li>
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">Unity iOS build</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color2">server framework</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">server lua</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1154,10 +1233,6 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">putty-nd</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">server lua</a>
               </li>
              
               <li class="article-tag-list-item">

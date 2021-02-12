@@ -6,15 +6,20 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" >
   <link rel="dns-prefetch" href="http://yoursite.com">
-  <title>Tag: Unity Android APP il2cpp | Noodle&#39;s blog</title>
+  <title>rzsz-nd_README | Noodle&#39;s blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta property="og:type" content="website">
-<meta property="og:title" content="Noodle&#39;s blog">
-<meta property="og:url" content="http://yoursite.com/tags/Unity-Android-APP-il2cpp/index.html">
+  <meta name="description" content="1. OverviewAs well-known, lrzsz is a very handy tool to transfer files along with the existing terminal. It is so convenient that after I implemented the ZMODEM feature in putty-nd, I seldom use other">
+<meta name="keywords" content="putty-nd">
+<meta property="og:type" content="article">
+<meta property="og:title" content="rzsz-nd_README">
+<meta property="og:url" content="http://yoursite.com/2021/02/12/rzsz-nd_README/index.html">
 <meta property="og:site_name" content="Noodle&#39;s blog">
+<meta property="og:description" content="1. OverviewAs well-known, lrzsz is a very handy tool to transfer files along with the existing terminal. It is so convenient that after I implemented the ZMODEM feature in putty-nd, I seldom use other">
 <meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2021-02-12T11:45:36.629Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Noodle&#39;s blog">
+<meta name="twitter:title" content="rzsz-nd_README">
+<meta name="twitter:description" content="1. OverviewAs well-known, lrzsz is a very handy tool to transfer files along with the existing terminal. It is so convenient that after I implemented the ZMODEM feature in putty-nd, I seldom use other">
   
     <link rel="alternative" href="/atom.xml" title="Noodle&#39;s blog" type="application/atom+xml">
   
@@ -128,60 +133,301 @@
             <canvas data-colors="#eaeaea" data-sectionHeight="100" data-contentId="js-content" id="myCanvas1" class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            
-  
-  
+            <article id="post-rzsz-nd_README" class="article article-type-post " itemscope itemprop="blogPost">
+  <div class="article-inner">
     
-    
-      
-      
-      <section class="archives-wrap">
-        <div class="archive-year-wrap">
-          <a href="/archives/2018" class="archive-year">2018</a>
-        </div>
-        <div class="archives">
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2018/11/18/CN-AndroidIl2cppPatchReadMeFirst/" class="archive-article-date">
-  	<time datetime="2018-11-18T11:32:10.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2018-11-18</time>
-</a>
-        </div>
-    	 
+      <header class="article-header">
+        
   
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2018/11/18/CN-AndroidIl2cppPatchReadMeFirst/">Unity Android APP il2cpp热更完美解决方案</a>
+    <h1 class="article-title" itemprop="name">
+      rzsz-nd_README
     </h1>
   
 
-        <div class="article-info info-on-right">
-          
+        
+        <a href="/2021/02/12/rzsz-nd_README/" class="archive-article-date">
+  	<time datetime="2021-02-12T01:58:50.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-02-12</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="1-Overview"><a href="#1-Overview" class="headerlink" title="1. Overview"></a>1. Overview</h1><p>As well-known, <a href="https://ohse.de/uwe/software/lrzsz.html" target="_blank" rel="noopener">lrzsz</a> is a very handy tool to transfer files along with the existing terminal. It is so convenient that after I implemented the ZMODEM feature in <a href="https://noodle1983.github.io/tags/putty-nd" target="_blank" rel="noopener">putty-nd</a>, I seldom use other tools to transfer files.</p>
+<p>Then, why do I make another implementation of it? Well, as a user, I have a lot of thinking, like what if it can blablabla or why can’t it be blablabla. Those thinking keep following me and someday I couldn’t stand for it and downloaded its source code. Sadly I gave up before I got drowned in the source code(Sorry to say that, it is my problem). And the worst thing is, this happened again and again. To get out of this dilemma, I decide to re-implement it again.</p>
+<p>I have some tools on hand, the FSM and the multi-jobs Processor in C++. So it is written in C++. I have written build scripts in plain Makefile, so it is not autoconf. It is a utility tool, which means it must not occupy lots of resources from the other logical server. So it is a single thread.</p>
+<p>As it is a long time after the ZMODEM protocol was invented, rzsz-nd starts from a basic feature, which is sending/receiving plain file in ZMODEM, without any conversion and encryption. For the other features in ZMODEM or YMODEM/XMODEM, will be gone with the wind if no one bring it back in the future. I have implemented some more features and protocol extensions, which are detailed in the following chapter.</p>
+<h1 id="2-Features"><a href="#2-Features" class="headerlink" title="2. Features"></a>2. Features</h1><h2 id="2-1-Normal-Zmodem-Workflow"><a href="#2-1-Normal-Zmodem-Workflow" class="headerlink" title="2.1. Normal Zmodem Workflow"></a>2.1. Normal Zmodem Workflow</h2><p>The original ZMODEM protocol is available via the <a href="http://gallium.inria.fr/~doligez/zmodem/zmodem.txt" target="_blank" rel="noopener">link</a> or <a href="https://github.com/noodle1983/rzsz-nd/blob/main/doc/zmodem.md" target="_blank" rel="noopener">the markdown version</a>. And the simple workflow comes follows.</p>
+<h3 id="sz-workflow"><a href="#sz-workflow" class="headerlink" title="sz workflow"></a>sz workflow</h3><pre class="mermaid">sequenceDiagram
+participant client
+participant server
+server->>client: ZRQINIT
+client->>server: ZRINIT
+server->>client: ZFILE
+client->>server: ZRPOS
+
+server->>client: ZDATA(ZCRCG... ZCRCE)
+server->>client: ZEOF
+client->>server: ZRINIT
+
+server->>client: FIN
+client->>server: FIN</pre>
+
+<h3 id="rz-workflow"><a href="#rz-workflow" class="headerlink" title="rz workflow"></a>rz workflow</h3><pre class="mermaid">sequenceDiagram
+participant client
+participant server
+server->>client: ZRINIT
+client->>server: ZFILE
+server->>client: ZRPOS
+client->>server: ZDATA(ZCRCG... ZCRCE)
+client->>server: ZEOF
+server->>client: ZRINIT
+client->>server: ZCOMPL
+client->>server: FIN
+server->>client: FIN</pre>
+
+<h1 id="2-2-sz-rz-directory"><a href="#2-2-sz-rz-directory" class="headerlink" title="2.2 sz/rz directory"></a>2.2 sz/rz directory</h1><p>The feature is already supported in the ZMODEM protocol. I just send the relative path of the file as its filename. The server/client check the ‘/‘ character and make the directory. However, the empty directory is ignored at the moment.</p>
+<h3 id="sz-workflow-1"><a href="#sz-workflow-1" class="headerlink" title="sz workflow"></a>sz workflow</h3><pre class="mermaid">sequenceDiagram
+participant client
+participant server
+server->>client: ZRQINIT
+loop each file
+    client->>server: ZRINIT
+    server->>client: ZFILE
+    client->>server: ZRPOS
+
+    server->>client: ZDATA(ZCRCG... ZCRCE)
+    server->>client: ZEOF
+end
+server->>client: FIN
+client->>server: FIN</pre>
+
+
+<h3 id="rz-workflow-1"><a href="#rz-workflow-1" class="headerlink" title="rz workflow"></a>rz workflow</h3><pre class="mermaid">sequenceDiagram
+participant client
+participant server
+server->>client: ZRINIT
+loop each file
+    client->>server: ZFILE
+    server->>client: ZRPOS
+    client->>server: ZDATA(ZCRCG... ZCRCE)
+    client->>server: ZEOF
+    server->>client: ZRINIT
+end
+client->>server: ZCOMPL
+client->>server: FIN
+server->>client: FIN</pre>
+
+<h1 id="2-large-file-gt-4-GB"><a href="#2-large-file-gt-4-GB" class="headerlink" title="2. large file(&gt;4 GB)"></a>2. large file(&gt;4 GB)</h1><p>The file cursor position in ZMODEM protocol message(ZRPOS/ZDATA/ZACK/ZEOF) is defined as 4 bytes, which limits the file size max to 4 GB. In order to achieve this feature, a 64bit binary frame with CRC32 is defined. When the cursor position is larger than 4 GB, the 64bit binary frame will be used while the rest is as it was.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">#define ZBIN64 &apos;D&apos;</span><br><span class="line">struct frame64_tag&#123;</span><br><span class="line">    unsigned char type;</span><br><span class="line">    unsigned char flag[8];</span><br><span class="line">    uint32_t crc;</span><br><span class="line">&#125;;</span><br><span class="line">typedef struct frame64_tag frame64_t;</span><br></pre></td></tr></table></figure></p>
+<h1 id="3-resume-the-transmission"><a href="#3-resume-the-transmission" class="headerlink" title="3. resume the transmission"></a>3. resume the transmission</h1><p>2 extra messages ZCOMMAND(ZCOMMAND_CHECK_LEN) and ZACK(pos) are involved.</p>
+<h3 id="sz-workflow-2"><a href="#sz-workflow-2" class="headerlink" title="sz workflow"></a>sz workflow</h3><pre class="mermaid">sequenceDiagram
+participant client
+participant server
+server->>client: ZRQINIT
+client->>server: ZRINIT
+server->>client: ZFILE
+
+opt file exist on client
+    Note left of client: calc the CRC32 of the existing the file content.
+    client->>server: ZCOMMAND_CHECK_LEN(CRC32, len)
+    Note right of server: verify the CRC32 of the file heading content in len length. ack with the same length if ok, otherwise 0. 
+    server->>client: ZACK(len)
+end
+Note left of client: start transmitting at the responsed length or 0.
+client->>server: ZRPOS(len)
+server->>client: ZDATA(ZCRCG... ZCRCE)
+server->>client: ZEOF
+client->>server: ZRINIT
+server->>client: FIN
+client->>server: FIN</pre>
+
+<h3 id="rz-workflow-2"><a href="#rz-workflow-2" class="headerlink" title="rz workflow"></a>rz workflow</h3><pre class="mermaid">sequenceDiagram
+participant client
+participant server
+server->>client: ZRINIT
+client->>server: ZFILE
+opt file exist on client
+    Note right of server: calc the CRC32 of the existing the file content.
+    server->>client: ZCOMMAND_CHECK_LEN
+
+    Note left of client: verify the CRC32 of the file heading content in len length. ack with the same length if ok, otherwise 0. 
+    client->>server: ZACK(len)
+end
+Note right of server: start transmitting at the responsed length or 0.
+server->>client: ZRPOS(len)
+client->>server: ZDATA(ZCRCG... ZCRCE)
+client->>server: ZEOF
+server->>client: ZRINIT
+client->>server: ZCOMPL
+client->>server: FIN
+server->>client: FIN</pre>
+
+<h1 id="4-update-working-direction"><a href="#4-update-working-direction" class="headerlink" title="4. update working direction"></a>4. update working direction</h1><p>The options are added to update client/server working direction, and preset the rz files to avoid the file selection. Please refer to the usage chapter for the details.</p>
+<h1 id="5-How-to-build"><a href="#5-How-to-build" class="headerlink" title="5. How to build"></a>5. How to build</h1><p>Type make to build release version. And make install to install it to /usr/local/bin.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">make</span><br><span class="line">make install</span><br></pre></td></tr></table></figure></p>
+<p>Type make debug to build a debug version.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">make debug</span><br></pre></td></tr></table></figure></p>
+<h1 id="6-Usage"><a href="#6-Usage" class="headerlink" title="6. Usage"></a>6. Usage</h1><h3 id="sz"><a href="#sz" class="headerlink" title="sz"></a>sz</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line">[ludong@VM-0-17-centos rzsz-nd]$ ./sz --help</span><br><span class="line"></span><br><span class="line">USAGE:</span><br><span class="line"></span><br><span class="line">   ./sz  [-s &lt;directory path&gt;] [-c &lt;directory path&gt;] [-l &lt;filename&gt;] [-d</span><br><span class="line">         &lt;int:0-5&gt;] [--] [--version] [-h] &lt;string[]&gt; ...</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Where:</span><br><span class="line"></span><br><span class="line">   -s &lt;directory path&gt;,  --server-working-dir &lt;directory path&gt;</span><br><span class="line">     Depending on ZVERSION:1, set the working directory on the server side.</span><br><span class="line">     It is current directory if not set.</span><br><span class="line"></span><br><span class="line">   -c &lt;directory path&gt;,  --client-working-dir &lt;directory path&gt;</span><br><span class="line">     Depending on ZVERSION:1, set the working directory on the client side.</span><br><span class="line">     It is desktop if not set.</span><br><span class="line"></span><br><span class="line">   -l &lt;filename&gt;,  --log &lt;filename&gt;</span><br><span class="line">     File to log</span><br><span class="line"></span><br><span class="line">   -d &lt;int:0-5&gt;,  --debug &lt;int:0-5&gt;</span><br><span class="line">     set debug level. 0: TRACE; 1: DEBUG; 2: INFO; 3: WARN; 4: ERROR; 5:</span><br><span class="line">     FATAL;</span><br><span class="line"></span><br><span class="line">   --,  --ignore_rest</span><br><span class="line">     Ignores the rest of the labeled arguments following this flag.</span><br><span class="line"></span><br><span class="line">   --version</span><br><span class="line">     Displays version information and exits.</span><br><span class="line"></span><br><span class="line">   -h,  --help</span><br><span class="line">     Displays usage information and exits.</span><br><span class="line"></span><br><span class="line">   &lt;string[]&gt;  (accepted multiple times)</span><br><span class="line">     (required)  files to sent</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">   Send file(s) with ZMODEM protocol.</span><br></pre></td></tr></table></figure>
+<hr>
+<h3 id="rz"><a href="#rz" class="headerlink" title="rz"></a>rz</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line">[ludong@VM-0-17-centos rzsz-nd]$ ./rz --help</span><br><span class="line"></span><br><span class="line">USAGE:</span><br><span class="line"></span><br><span class="line">   ./rz  [-f] [-p &lt;directory/file path&gt;] [-s &lt;directory path&gt;] [-c</span><br><span class="line">         &lt;directory path&gt;] [-l &lt;filename&gt;] [-d &lt;int:0-5&gt;] [--] [--version]</span><br><span class="line">         [-h]</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Where:</span><br><span class="line"></span><br><span class="line">   -f,  --rz-folder-mode</span><br><span class="line">     rz folder mode, make client to select folder.</span><br><span class="line"></span><br><span class="line">   -p &lt;directory/file path&gt;,  --preset-files &lt;directory/file path&gt;</span><br><span class="line">     Depending on ZVERSION:1, preset rz files splited by &apos;#&apos; to skip file</span><br><span class="line">     selection</span><br><span class="line"></span><br><span class="line">   -s &lt;directory path&gt;,  --server-working-dir &lt;directory path&gt;</span><br><span class="line">     Depending on ZVERSION:1, set the working directory on the server side.</span><br><span class="line">     It is current directory if not set.</span><br><span class="line"></span><br><span class="line">   -c &lt;directory path&gt;,  --client-working-dir &lt;directory path&gt;</span><br><span class="line">     Depending on ZVERSION:1, set the working directory on the client side.</span><br><span class="line">     It is desktop if not set.</span><br><span class="line"></span><br><span class="line">   -l &lt;filename&gt;,  --log &lt;filename&gt;</span><br><span class="line">     File to log</span><br><span class="line"></span><br><span class="line">   -d &lt;int:0-5&gt;,  --debug &lt;int:0-5&gt;</span><br><span class="line">     set debug level. 0: TRACE; 1: DEBUG; 2: INFO; 3: WARN; 4: ERROR; 5:</span><br><span class="line">     FATAL;</span><br><span class="line"></span><br><span class="line">   --,  --ignore_rest</span><br><span class="line">     Ignores the rest of the labeled arguments following this flag.</span><br><span class="line"></span><br><span class="line">   --version</span><br><span class="line">     Displays version information and exits.</span><br><span class="line"></span><br><span class="line">   -h,  --help</span><br><span class="line">     Displays usage information and exits.</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">   Receive file(s) with ZMODEM protocol.</span><br></pre></td></tr></table></figure>
+<h1 id="7-License"><a href="#7-License" class="headerlink" title="7. License"></a>7. License</h1><p>Except for extra permissions from Dong Lu(<a href="mailto:noodle1983@126.com" target="_blank" rel="noopener">noodle1983@126.com</a>), this software is released under version 3 of the GNU General Public License (GPLv3).</p>
+<h3 id="other-modules"><a href="#other-modules" class="headerlink" title="other modules"></a>other modules</h3><table>
+<thead>
+<tr>
+<th>module</th>
+<th>license</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="http://tclap.sourceforge.net/" target="_blank" rel="noopener">tclap</a></td>
+<td>MIT License</td>
+</tr>
+</tbody>
+</table>
+<h1 id="8-Support"><a href="#8-Support" class="headerlink" title="8. Support"></a>8. Support</h1><p><a href="https://github.com/noodle1983/rzsz-nd/issues" target="_blank" rel="noopener">Github</a></p>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
 	<div class="article-tag tagcloud">
 		<i class="icon-price-tags icon"></i>
 		<ul class="article-tag-list">
 			 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">Unity Android APP il2cpp</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">putty-nd</a>
         		</li>
       		
 		</ul>
 	</div>
 
-          
+      
 
+      
+
+      
+        
+<div class="share-btn share-icons tooltip-left">
+  <div class="tooltip tooltip-east">
+    <span class="tooltip-item">
+      <a href="javascript:;" class="share-sns share-outer">
+        <i class="icon icon-share"></i>
+      </a>
+    </span>
+    <span class="tooltip-content">
+      <div class="share-wrap">
+        <div class="share-icons">
+          <a class="weibo share-sns" href="javascript:;" data-type="weibo">
+            <i class="icon icon-weibo"></i>
+          </a>
+          <a class="weixin share-sns wxFab" href="javascript:;" data-type="weixin">
+            <i class="icon icon-weixin"></i>
+          </a>
+          <a class="qq share-sns" href="javascript:;" data-type="qq">
+            <i class="icon icon-qq"></i>
+          </a>
+          <a class="douban share-sns" href="javascript:;" data-type="douban">
+            <i class="icon icon-douban"></i>
+          </a>
+          <a class="qzone share-sns" href="javascript:;" data-type="qzone">
+            <i class="icon icon-qzone"></i>
+          </a>
+          <a class="facebook share-sns" href="javascript:;" data-type="facebook">
+            <i class="icon icon-facebook"></i>
+          </a>
+          <a class="twitter share-sns" href="javascript:;" data-type="twitter">
+            <i class="icon icon-twitter"></i>
+          </a>
+          <a class="google share-sns" href="javascript:;" data-type="google">
+            <i class="icon icon-google"></i>
+          </a>
         </div>
-        <div class="clearfix"></div>
-    </header>
+      </div>
+    </span>
+  </div>
+</div>
+
+<div class="page-modal wx-share js-wx-box">
+    <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <div class="wx-qrcode">
+      <img src="//pan.baidu.com/share/qrcode?url=http://yoursite.com/2021/02/12/rzsz-nd_README/" alt="微信分享二维码">
+    </div>
+</div>
+
+<div class="mask js-mask"></div>
+      
+      <div class="clearfix"></div>
+    </div>
   </div>
 </article>
+
+  
+<nav id="article-nav">
+  
+    <a href="/2021/02/12/putty-nd7.7/" id="article-nav-newer" class="article-nav-link-wrap">
+      <i class="icon-circle-left"></i>
+      <div class="article-nav-title">
+        
+          putty-nd7.7 release
+        
+      </div>
+    </a>
   
   
-    </div></section>
+    <a href="/2021/01/19/putty-nd7.6/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">putty-nd7.6 release</div>
+      <i class="icon-circle-right"></i>
+    </a>
+  
+</nav>
+
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+  
+  
   
 
-    
+  
+
+  
+
+  
+  <div id="gitment-ctn"></div> 
+<link rel="stylesheet" href="https://jjeejj.github.io/css/gitment.css">
+<script src="https://jjeejj.github.io/js/gitment.js"></script>
+<script>
+var gitment = new Gitment({
+  id: "Fri Feb 12 2021 09:58:50 GMT+0800",
+  owner: 'noodle1983',
+  repo: 'gitment-comments',
+  oauth: {
+    client_id: '972f3c4a589c8d3ecc20',
+    client_secret: '2992fa2ea0fa071faafd9e65e585051f08df0a86',
+  },
+})
+gitment.render('gitment-ctn')
+</script>
+  
 
 
           </div>
@@ -204,9 +450,9 @@
 	var yiliaConfig = {
 		mathjax: false,
 		isHome: false,
-		isPost: false,
+		isPost: true,
 		isArchive: false,
-		isTag: true,
+		isTag: false,
 		isCategory: false,
 		open_in_new: false,
 		toc_hide_index: true,
