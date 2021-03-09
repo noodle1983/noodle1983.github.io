@@ -6,20 +6,20 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" >
   <link rel="dns-prefetch" href="http://yoursite.com">
-  <title>rzsz-nd_README | Noodle&#39;s blog</title>
+  <title>rzsz-nd, the resumable zmodem | Noodle&#39;s blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="1. OverviewAs well-known, lrzsz is a very handy tool to transfer files along with the existing terminal. It is so convenient that after I implemented the ZMODEM feature in putty-nd, I seldom use other">
+  <meta name="description" content="This is the readme file for rzsz-nd . 1. OverviewAs well-known, lrzsz is a very handy tool to transfer files along with the existing terminal. It is so convenient that after I implemented the ZMODEM f">
 <meta name="keywords" content="putty-nd">
 <meta property="og:type" content="article">
-<meta property="og:title" content="rzsz-nd_README">
+<meta property="og:title" content="rzsz-nd, the resumable zmodem">
 <meta property="og:url" content="http://yoursite.com/2021/02/12/rzsz-nd_README/index.html">
 <meta property="og:site_name" content="Noodle&#39;s blog">
-<meta property="og:description" content="1. OverviewAs well-known, lrzsz is a very handy tool to transfer files along with the existing terminal. It is so convenient that after I implemented the ZMODEM feature in putty-nd, I seldom use other">
+<meta property="og:description" content="This is the readme file for rzsz-nd . 1. OverviewAs well-known, lrzsz is a very handy tool to transfer files along with the existing terminal. It is so convenient that after I implemented the ZMODEM f">
 <meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2021-02-12T11:45:36.629Z">
+<meta property="og:updated_time" content="2021-03-09T14:20:16.424Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="rzsz-nd_README">
-<meta name="twitter:description" content="1. OverviewAs well-known, lrzsz is a very handy tool to transfer files along with the existing terminal. It is so convenient that after I implemented the ZMODEM feature in putty-nd, I seldom use other">
+<meta name="twitter:title" content="rzsz-nd, the resumable zmodem">
+<meta name="twitter:description" content="This is the readme file for rzsz-nd . 1. OverviewAs well-known, lrzsz is a very handy tool to transfer files along with the existing terminal. It is so convenient that after I implemented the ZMODEM f">
   
     <link rel="alternative" href="/atom.xml" title="Noodle&#39;s blog" type="application/atom+xml">
   
@@ -140,7 +140,7 @@
         
   
     <h1 class="article-title" itemprop="name">
-      rzsz-nd_README
+      rzsz-nd, the resumable zmodem
     </h1>
   
 
@@ -153,7 +153,8 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h1 id="1-Overview"><a href="#1-Overview" class="headerlink" title="1. Overview"></a>1. Overview</h1><p>As well-known, <a href="https://ohse.de/uwe/software/lrzsz.html" target="_blank" rel="noopener">lrzsz</a> is a very handy tool to transfer files along with the existing terminal. It is so convenient that after I implemented the ZMODEM feature in <a href="https://noodle1983.github.io/tags/putty-nd" target="_blank" rel="noopener">putty-nd</a>, I seldom use other tools to transfer files.</p>
+        <p>This is the readme file for <a href="https://github.com/noodle1983/rzsz-nd" target="_blank" rel="noopener">rzsz-nd</a> .</p>
+<h1 id="1-Overview"><a href="#1-Overview" class="headerlink" title="1. Overview"></a>1. Overview</h1><p>As well-known, <a href="https://ohse.de/uwe/software/lrzsz.html" target="_blank" rel="noopener">lrzsz</a> is a very handy tool to transfer files along with the existing terminal. It is so convenient that after I implemented the ZMODEM feature in <a href="https://noodle1983.github.io/tags/putty-nd" target="_blank" rel="noopener">putty-nd</a>, I seldom use other tools to transfer files.</p>
 <p>Then, why do I make another implementation of it? Well, as a user, I have a lot of thinking, like what if it can blablabla or why can’t it be blablabla. Those thinking keep following me and someday I couldn’t stand for it and downloaded its source code. Sadly I gave up before I got drowned in the source code(Sorry to say that, it is my problem). And the worst thing is, this happened again and again. To get out of this dilemma, I decide to re-implement it again.</p>
 <p>I have some tools on hand, the FSM and the multi-jobs Processor in C++. So it is written in C++. I have written build scripts in plain Makefile, so it is not autoconf. It is a utility tool, which means it must not occupy lots of resources from the other logical server. So it is a single thread.</p>
 <p>As it is a long time after the ZMODEM protocol was invented, rzsz-nd starts from a basic feature, which is sending/receiving plain file in ZMODEM, without any conversion and encryption. For the other features in ZMODEM or YMODEM/XMODEM, will be gone with the wind if no one bring it back in the future. I have implemented some more features and protocol extensions, which are detailed in the following chapter.</p>
@@ -522,6 +523,10 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
           <ul class="article-tag-list" q-show="showTags">
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">server</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color5">Unity Android APP il2cpp</a>
               </li>
              
@@ -534,19 +539,15 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">server</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color1">Android NDK gdb</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">putty-nd</a>
+                <a href="javascript:void(0)" class="js-tag color1">server lua</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">server lua</a>
+                <a href="javascript:void(0)" class="js-tag color4">putty-nd</a>
               </li>
              
               <li class="article-tag-list-item">
