@@ -130,6 +130,93 @@
           <div id="js-content" class="content-ll">
             
   
+    <article id="post-putty-nd7.8" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2021/03/19/putty-nd7.8/">putty-nd7.8 release</a>
+    </h1>
+  
+
+        
+        <a href="/2021/03/19/putty-nd7.8/" class="archive-article-date">
+  	<time datetime="2021-03-19T07:58:53.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-03-19</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h3 id="1-Bugs"><a href="#1-Bugs" class="headerlink" title="1. Bugs"></a>1. Bugs</h3><ul>
+<li>crash when opening session group.</li>
+</ul>
+<h3 id="2-Other-changes"><a href="#2-Other-changes" class="headerlink" title="2. Other changes"></a>2. Other changes</h3><ul>
+<li>integrate with <a href="https://github.com/unxed/putty4far2l" target="_blank" rel="noopener">putty4far2l</a>. Please turn on the options in [Global Setting-&gt;Global Far2l Support] as it is disabled by default.</li>
+<li>pipe to local EXE with pseudo-terminal for Pipe protocol(named adb originally).<br>  Known issue: <ul>
+<li>copied wrapped line and pasted as multi-lines. Because the cmd.exe and the powershell.exe sends ‘\r\n’ in the wrapped line.</li>
+<li>the powershell may switch to a second line during inputting.</li>
+</ul>
+</li>
+<li>In file explorer, “putty-nd -c/p” will open a pipe session to cmd.exe/powershell.exe with current directory set. Related session: Preset/cmd, Preset/powershell.<br><img src="https://cdn.jsdelivr.net/gh/noodle1983/private@861e61a7547293c3d75bccb859f65701247a746f/putty-nd/7.8/explorer-sc-cmd.gif" alt="cmd in explorer"></li>
+<li>In file explorer, “putty-nd -sc/sp” will open a new administrator console to cmd.exe/powershell.exe with current directory set. Related session: Preset/sudo_cmd, Preset/sudo_powershell.<br><img src="https://cdn.jsdelivr.net/gh/noodle1983/private@861e61a7547293c3d75bccb859f65701247a746f/putty-nd/7.8/explorer-sc-sudo-cmd.gif" alt="sudo cmd in explorer"></li>
+</ul>
+<h3 id="3-Ongoing"><a href="#3-Ongoing" class="headerlink" title="3. Ongoing"></a>3. Ongoing</h3><h3 id="4-Downloads"><a href="#4-Downloads" class="headerlink" title="4. Downloads"></a>4. Downloads</h3><p><a href="https://sourceforge.net/projects/putty-nd/files/old/putty_nd7.8.zip/download" target="_blank" rel="noopener">Sourceforge</a><br><a href="https://cdn.jsdelivr.net/gh/noodle1983/private@04a4d88c74ea584ad1c20e13447cb6a697151a54/putty-nd/7.8/putty_nd7.8.zip" target="_blank" rel="noopener">Github</a></p>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">putty-nd</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2021/03/19/putty-nd7.8/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-putty-nd7.7" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
@@ -1018,98 +1105,6 @@ server->>client: FIN</pre>
 
 
   
-    <article id="post-framework-nd_fifo" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2019/01/02/framework-nd_fifo/">framework-nd之读写线程隔离的FIFO队列</a>
-    </h1>
-  
-
-        
-        <a href="/2019/01/02/framework-nd_fifo/" class="archive-article-date">
-  	<time datetime="2019-01-02T13:32:10.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-01-02</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h1 id="1-设计"><a href="#1-设计" class="headerlink" title="1. 设计"></a>1. 设计</h1><h1 id="1-1-想法"><a href="#1-1-想法" class="headerlink" title="1.1. 想法"></a>1.1. 想法</h1><p>设计<a href="https://github.com/noodle1983/framework-nd/" target="_blank" rel="noopener">框架</a>(背景见<a href="https://noodle1983.github.io/2019/01/01/framework-nd_thread_model/" target="_blank" rel="noopener">链接</a>)的时候，经常会碰到生产者消费者模型，当时就想整型以机器字长对齐，其赋值和读取都是原子的。举个例子 </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">size_t i = 0; </span><br><span class="line">i = 0xFFFF;</span><br></pre></td></tr></table></figure>
-<p>在机器字长对齐的情况下，任何时候，a要么是0，要么是0xFFFF，不会出现0xFF00。（如果是pack（1），上面就不成立了）</p>
-<p>因此就有个很天然的想法，如果生产者和消费者各一个，分属不同线程，生产者只修改写偏移量，消费者只改读偏移量，两个偏移量设为volatile保证其只能从内存读取(volatile不能保证线程安全，这里的安全是通过内存总线保证偏移量的完整性实现的)，是不是能实现一个FIFO的循环队列，不加锁的情况下也能保证队列内数据的完整性。</p>
-<h1 id="1-2-读写分析"><a href="#1-2-读写分析" class="headerlink" title="1.2. 读写分析"></a>1.2. 读写分析</h1><p>设想一下，如果生产者写偏移量不更新，消费者首先判断当前无数据可读；<br><img src="https://github.com/noodle1983/private/raw/master/CommonBlog/FiFoBuffer_rw.png" alt="w=r"></p>
-<p>生产者将数据写入，然后才更新写偏移量，整个过程只有写偏移量修改修改后，消费者才能开始读。<br><img src="https://github.com/noodle1983/private/raw/master/CommonBlog/FiFoBuffer_w.png" alt="w"></p>
-<h1 id="1-3-偏移量的处理"><a href="#1-3-偏移量的处理" class="headerlink" title="1.3. 偏移量的处理"></a>1.3. 偏移量的处理</h1><p>以上写/读流程都工作得很好，直到写偏移量&gt;buffer大小<br><img src="https://github.com/noodle1983/private/raw/master/CommonBlog/FiFoBuffer_wl.png" alt="wl"><br>因为写之前要判断剩下多少空间可写<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">size_t usedSize = writeIndexM - readIndexM;</span><br><span class="line">size_t leftSize = sizeM - usedSize;</span><br></pre></td></tr></table></figure></p>
-<p>如果将writeIndexM限制于[0, sizeM)，因为readIndexM只能由消费者改，那么下次写，这条公式就不对了。</p>
-<p>怎么处理呢？与其做复杂的判断，不如不限偏移量的范围，就让writeIndexM和readIndexM只增不减，即使是溢出，因为sizeM远小于量偏移量的取值范围，上面的公式还是成立的。</p>
-<p>这样子，带来另外一个问题，如何将writeIndexM映射回buffer的偏移量呢？很简单，对sizeM取余就好。这样对sizeM会有限制，比如32bit，因为有溢出的问题，推导要求 (0xFFFFFFFF + 1) % sizeM = 0 % sizeM = 0，即</p>
-<p><img src="https://github.com/noodle1983/private/raw/master/CommonBlog/fifo_fomula.png" alt="fomula"></p>
-<p>也就是说sizeM必须是2的倍数</p>
-<p>至此，这个循环的buffer就成型了，一个线程读一个线程写，不用加锁，互不干扰。如果多个生产者，需要在生产者侧加锁。消费者类似。</p>
-<h1 id="2-实现"><a href="#2-实现" class="headerlink" title="2. 实现"></a>2. 实现</h1><p>源代码，32位及以上适用：</p>
-<ul>
-<li><a href="https://github.com/noodle1983/framework-nd/blob/master/Utility/include/KfifoBuffer.h" target="_blank" rel="noopener">KfifoBuffer.h</a></li>
-<li><a href="https://github.com/noodle1983/framework-nd/blob/master/Utility/src/KfifoBuffer.cpp" target="_blank" rel="noopener">KfifoBuffer.cpp</a></li>
-</ul>
-<h1 id="3-后记"><a href="#3-后记" class="headerlink" title="3. 后记"></a>3. 后记</h1><p>当时查过，size_t的赋值在机器字长对齐的情况下，部分平台可能会由多条指令实现的，这种平台(网上也没说是什么平台，估计比较小众)不适用。根据笔者的测试，x86/x64是ok的，arm的默认thumb指令集也ok。请测试使用。</p>
-
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">server framework</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2019/01/02/framework-nd_fifo/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
   
     <nav id="page-nav">
       <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><a class="extend next" rel="next" href="/page/2/">Next &raquo;</a>
@@ -1213,11 +1208,11 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">Unity Android APP il2cpp</a>
+                <a href="javascript:void(0)" class="js-tag color1">Unity iOS build</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">Unity iOS build</a>
+                <a href="javascript:void(0)" class="js-tag color5">Unity Android APP il2cpp</a>
               </li>
              
               <li class="article-tag-list-item">
