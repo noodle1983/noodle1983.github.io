@@ -130,6 +130,71 @@
           <div id="js-content" class="content-ll">
             
   
+    <article id="post-RestartAndroidAppInUnityPureC" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/11/17/RestartAndroidAppInUnityPureC/">Restart Android App In Unity Pure C#</a>
+    </h1>
+  
+
+        
+        <a href="/2018/11/17/RestartAndroidAppInUnityPureC/" class="archive-article-date">
+  	<time datetime="2018-11-17T11:32:10.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2018-11-17</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>Restart Android App In Unity Pure C#</p>
+<p>So far so good</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">using (AndroidJavaClass unityPlayer = new AndroidJavaClass(&quot;com.unity3d.player.UnityPlayer&quot;))</span><br><span class="line">&#123;</span><br><span class="line">    AndroidJavaObject currentActivity = unityPlayer.GetStatic&lt;AndroidJavaObject&gt;(&quot;currentActivity&quot;);</span><br><span class="line"></span><br><span class="line">    AndroidJavaObject pm = currentActivity.Call&lt;AndroidJavaObject&gt;(&quot;getPackageManager&quot;);</span><br><span class="line">    AndroidJavaObject intent = pm.Call&lt;AndroidJavaObject&gt;(&quot;getLaunchIntentForPackage&quot;, Application.identifier);</span><br><span class="line">    intent.Call&lt;AndroidJavaObject&gt;(&quot;setFlags&quot;, 0x20000000);//Intent.FLAG_ACTIVITY_SINGLE_TOP</span><br><span class="line"></span><br><span class="line">    AndroidJavaClass pendingIntent = new AndroidJavaClass(&quot;android.app.PendingIntent&quot;);</span><br><span class="line">    AndroidJavaObject contentIntent = pendingIntent.CallStatic&lt;AndroidJavaObject&gt;(&quot;getActivity&quot;, currentActivity, 0, intent, 0x8000000); //PendingIntent.FLAG_UPDATE_CURRENT = 134217728 [0x8000000]</span><br><span class="line">    AndroidJavaObject alarmManager = currentActivity.Call&lt;AndroidJavaObject&gt;(&quot;getSystemService&quot;, &quot;alarm&quot;);</span><br><span class="line">    AndroidJavaClass system = new AndroidJavaClass(&quot;java.lang.System&quot;);</span><br><span class="line">    long currentTime = system.CallStatic&lt;long&gt;(&quot;currentTimeMillis&quot;);</span><br><span class="line">    alarmManager.Call(&quot;set&quot;, 1, currentTime + 1000, contentIntent); // android.app.AlarmManager.RTC = 1 [0x1]</span><br><span class="line"></span><br><span class="line">    Debug.LogError(&quot;alarm_manager set time &quot; + currentTime + 1000);</span><br><span class="line">    currentActivity.Call(&quot;finish&quot;);</span><br><span class="line"></span><br><span class="line">    AndroidJavaClass process = new AndroidJavaClass(&quot;android.os.Process&quot;);</span><br><span class="line">    int pid = process.CallStatic&lt;int&gt;(&quot;myPid&quot;);</span><br><span class="line">    process.CallStatic(&quot;killProcess&quot;, pid);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2018/11/17/RestartAndroidAppInUnityPureC/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-2018珠海航展攻略" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
@@ -390,11 +455,11 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">Unity iOS build</a>
+                <a href="javascript:void(0)" class="js-tag color5">Unity Android APP il2cpp</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">Unity Android APP il2cpp</a>
+                <a href="javascript:void(0)" class="js-tag color1">Unity iOS build</a>
               </li>
              
               <li class="article-tag-list-item">

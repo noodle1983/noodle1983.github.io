@@ -130,6 +130,86 @@
           <div id="js-content" class="content-ll">
             
   
+    <article id="post-framework-nd_singleton" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2019/01/03/framework-nd_singleton/">framework-nd之singleton模板</a>
+    </h1>
+  
+
+        
+        <a href="/2019/01/03/framework-nd_singleton/" class="archive-article-date">
+  	<time datetime="2019-01-03T03:00:10.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-01-03</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="1-实现"><a href="#1-实现" class="headerlink" title="1. 实现"></a>1. 实现</h1><p>无侵入设计，把任意类变成singleton：</p>
+<p><a href="https://github.com/noodle1983/framework-nd/blob/master/DesignPattern/include/Singleton.hpp" target="_blank" rel="noopener">Singleton.hpp</a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">template&lt;typename DataType, int instanceId = 0&gt;</span><br><span class="line">class Singleton </span><br><span class="line">&#123;</span><br><span class="line">public: </span><br><span class="line">    static DataType* instance()</span><br><span class="line">    &#123;</span><br><span class="line">        if (NULL == dataHolderM.get())</span><br><span class="line">        &#123;</span><br><span class="line">            boost::lock_guard&lt;boost::mutex&gt; lock(dbLockMutexM);</span><br><span class="line">            if (NULL == dataHolderM.get())</span><br><span class="line">            &#123;</span><br><span class="line">                dataHolderM.reset(new DataType);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        return dataHolderM.get();</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">private:</span><br><span class="line">    Singleton()&#123;&#125;;</span><br><span class="line">    ~Singleton()&#123;&#125;;</span><br><span class="line"></span><br><span class="line">    static std::auto_ptr&lt;DataType&gt; dataHolderM;</span><br><span class="line">    static boost::mutex dbLockMutexM;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">template&lt;typename DataType, int instanceId&gt;</span><br><span class="line">std::auto_ptr&lt;DataType&gt; Singleton&lt;DataType, instanceId&gt;::dataHolderM;</span><br><span class="line"></span><br><span class="line">template&lt;typename DataType, int instanceId&gt;</span><br><span class="line">boost::mutex Singleton&lt;DataType, instanceId&gt;::dbLockMutexM;</span><br></pre></td></tr></table></figure>
+<p>因为是模板，static变量的定义可放头文件，c++编译器对每个实体类的static变量仅定义一次。</p>
+<p>如果需要多个实例，可以为instanceId赋不同的值（如下），否则忽略。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">class A&#123;&#125;;</span><br><span class="line"></span><br><span class="line">typedef DesignPattern::Singleton&lt;A, 0&gt; TheA;</span><br><span class="line">typedef DesignPattern::Singleton&lt;A, 1&gt; AnotherA;</span><br><span class="line"></span><br><span class="line">int main()</span><br><span class="line">&#123;</span><br><span class="line">    assert(TheA::instance() != AnotherA::instance());</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="2-使用注意"><a href="#2-使用注意" class="headerlink" title="2. 使用注意"></a>2. 使用注意</h1><p>后来碰到的问题，析构顺序需要控制，当时是通过调整链接顺序解决。现在想想，更好的是at_exit，main前先全声明一遍，逆序析构。</p>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">server framework</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2019/01/03/framework-nd_singleton/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-framework-nd_fifo" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
@@ -1155,71 +1235,6 @@
 
 
   
-    <article id="post-RestartAndroidAppInUnityPureC" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/11/17/RestartAndroidAppInUnityPureC/">Restart Android App In Unity Pure C#</a>
-    </h1>
-  
-
-        
-        <a href="/2018/11/17/RestartAndroidAppInUnityPureC/" class="archive-article-date">
-  	<time datetime="2018-11-17T11:32:10.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2018-11-17</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>Restart Android App In Unity Pure C#</p>
-<p>So far so good</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">using (AndroidJavaClass unityPlayer = new AndroidJavaClass(&quot;com.unity3d.player.UnityPlayer&quot;))</span><br><span class="line">&#123;</span><br><span class="line">    AndroidJavaObject currentActivity = unityPlayer.GetStatic&lt;AndroidJavaObject&gt;(&quot;currentActivity&quot;);</span><br><span class="line"></span><br><span class="line">    AndroidJavaObject pm = currentActivity.Call&lt;AndroidJavaObject&gt;(&quot;getPackageManager&quot;);</span><br><span class="line">    AndroidJavaObject intent = pm.Call&lt;AndroidJavaObject&gt;(&quot;getLaunchIntentForPackage&quot;, Application.identifier);</span><br><span class="line">    intent.Call&lt;AndroidJavaObject&gt;(&quot;setFlags&quot;, 0x20000000);//Intent.FLAG_ACTIVITY_SINGLE_TOP</span><br><span class="line"></span><br><span class="line">    AndroidJavaClass pendingIntent = new AndroidJavaClass(&quot;android.app.PendingIntent&quot;);</span><br><span class="line">    AndroidJavaObject contentIntent = pendingIntent.CallStatic&lt;AndroidJavaObject&gt;(&quot;getActivity&quot;, currentActivity, 0, intent, 0x8000000); //PendingIntent.FLAG_UPDATE_CURRENT = 134217728 [0x8000000]</span><br><span class="line">    AndroidJavaObject alarmManager = currentActivity.Call&lt;AndroidJavaObject&gt;(&quot;getSystemService&quot;, &quot;alarm&quot;);</span><br><span class="line">    AndroidJavaClass system = new AndroidJavaClass(&quot;java.lang.System&quot;);</span><br><span class="line">    long currentTime = system.CallStatic&lt;long&gt;(&quot;currentTimeMillis&quot;);</span><br><span class="line">    alarmManager.Call(&quot;set&quot;, 1, currentTime + 1000, contentIntent); // android.app.AlarmManager.RTC = 1 [0x1]</span><br><span class="line"></span><br><span class="line">    Debug.LogError(&quot;alarm_manager set time &quot; + currentTime + 1000);</span><br><span class="line">    currentActivity.Call(&quot;finish&quot;);</span><br><span class="line"></span><br><span class="line">    AndroidJavaClass process = new AndroidJavaClass(&quot;android.os.Process&quot;);</span><br><span class="line">    int pid = process.CallStatic&lt;int&gt;(&quot;myPid&quot;);</span><br><span class="line">    process.CallStatic(&quot;killProcess&quot;, pid);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2018/11/17/RestartAndroidAppInUnityPureC/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
   
     <nav id="page-nav">
       <a class="extend prev" rel="prev" href="/">&laquo; Prev</a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><a class="extend next" rel="next" href="/page/3/">Next &raquo;</a>
@@ -1323,11 +1338,11 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">Unity iOS build</a>
+                <a href="javascript:void(0)" class="js-tag color5">Unity Android APP il2cpp</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">Unity Android APP il2cpp</a>
+                <a href="javascript:void(0)" class="js-tag color1">Unity iOS build</a>
               </li>
              
               <li class="article-tag-list-item">
