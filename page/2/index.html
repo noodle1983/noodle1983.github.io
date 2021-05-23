@@ -130,6 +130,138 @@
           <div id="js-content" class="content-ll">
             
   
+    <article id="post-framework-nd_Makefile" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2019/01/04/framework-nd_Makefile/">framework-nd之强迫症的Makefile</a>
+    </h1>
+  
+
+        
+        <a href="/2019/01/04/framework-nd_Makefile/" class="archive-article-date">
+  	<time datetime="2019-01-04T08:00:10.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-01-04</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="1-设计思路"><a href="#1-设计思路" class="headerlink" title="1. 设计思路"></a>1. 设计思路</h1><p>经历的项目里，见过有用autoconf的，但是私有的server，部署环境是确定的，大多都是直接用Makefile。</p>
+<p>为什么说是强迫症的呢？主要是最初有这么几个想法：</p>
+<ul>
+<li>见到的其他所有Makefile，.o文件和.c/.cpp文件是放在一起的，觉得不美观，想仿VS，放在另外一个文件夹里，如.lib。和VS不同的是，笔者还想在这个目录下建立和源代码一样的目录体系，.o文件放在各自的目录下。这样有什么好处呢，不同的目录相当于不同的命名空间，如果没有目录结构，这部分信息就丢了。如我们的miniserver在不同的目录下，有两个相同名字的misc.cpp，内容是不一样的（一个有用，一个是废的），其Editor的版本是用VS编译的，因为VS是没有保留目录信息的，后编译的文件会覆盖前一个，就造成了一个诡异的结果，有时是ok的，有时链接符号未定义…这个bug让人好找</li>
+<li>Makefile支持include的语法，另一个想法是将它做成插件化，各层的Makefile只要include了之后，对几个变量进行赋值就ok了（Android的Makefile也是这么干的）。</li>
+<li>增量编译</li>
+</ul>
+<p>这个Makefile框架后来用于游戏项目，另外加了</p>
+<ul>
+<li>Debug版本的所有输出文件名加上”_d”，Release版本的所有输出文件加上”_r”，这样将Debug版和Release版的输出隔开，避免链接串文件。</li>
+</ul>
+<p>对项目文件的管理，设想是一个顶层目录一个库（如前文的线程组一个目录，网络库一个目录，逻辑层的FSM一个目录…），先编译成静态库或者动态库（动态库问题比较多，我们最后都用静态库了）;每个库带一个UnitTest目录，一边写一边测，最后这个UnitTest就被当成执行文件了。</p>
+<h1 id="2-实现"><a href="#2-实现" class="headerlink" title="2. 实现"></a>2. 实现</h1><p>先看一个目录的例子。</p>
+<h1 id="2-1-一个应用的例子"><a href="#2-1-一个应用的例子" class="headerlink" title="2.1. 一个应用的例子"></a>2.1. 一个应用的例子</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><span class="line">#########################################</span><br><span class="line">#                top dir                #</span><br><span class="line">#########################################</span><br><span class="line">PROJBASE=$(CURDIR)/../../</span><br><span class="line"></span><br><span class="line">#########################################</span><br><span class="line">#                target                 #</span><br><span class="line">#########################################</span><br><span class="line">PRE_CMD=echo &apos;pre compile cmd&apos;</span><br><span class="line">POST_CMD=echo &apos;post compile cmd on success&apos;</span><br><span class="line">SUBDIR= .</span><br><span class="line">EXCEPT_FILES=  %test.cpp </span><br><span class="line"></span><br><span class="line">#########################################</span><br><span class="line">#      header and lib dependancy        #</span><br><span class="line">#########################################</span><br><span class="line">INC_DIR= -I.  \</span><br><span class="line">	-I/usr/include/mysql \</span><br><span class="line">	-I$(PROJBASE)/lib/include \</span><br><span class="line"></span><br><span class="line">DEBUG_STATIC_LIB= \</span><br><span class="line">	$(PROJBASE)/lib/libmysqlclient_r.a \</span><br><span class="line">	$(PROJBASE)/lib/libcommon$(BUILD_SUFFIX).a \</span><br><span class="line">	$(PROJBASE)/lib/libffluajit.a \</span><br><span class="line">	$(PROJBASE)/lib/libtcmalloc_debug.a \</span><br><span class="line">	$(PROJBASE)/lib/libprofiler.a \</span><br><span class="line">	$(PROJBASE)/lib/libunwind.a \</span><br><span class="line">	$(PROJBASE)/lib/libcurl.a \</span><br><span class="line">	$(PROJBASE)/lib/libssl.a \</span><br><span class="line">	$(PROJBASE)/lib/libcrypto.a\</span><br><span class="line">	$(PROJBASE)/lib/libz.a\</span><br><span class="line">	$(PROJBASE)/lib/libcares.a\</span><br><span class="line"></span><br><span class="line">RELEASE_STATIC_LIB= \</span><br><span class="line">	$(PROJBASE)/lib/libmysqlclient_r.a \</span><br><span class="line">	$(PROJBASE)/lib/libcommon$(BUILD_SUFFIX).a \</span><br><span class="line">	$(PROJBASE)/lib/libffluajit.a \</span><br><span class="line">	$(PROJBASE)/lib/libtcmalloc.a \</span><br><span class="line">	$(PROJBASE)/lib/libprofiler.a \</span><br><span class="line">	$(PROJBASE)/lib/libunwind.a \</span><br><span class="line">	$(PROJBASE)/lib/libcurl.a \</span><br><span class="line">	$(PROJBASE)/lib/libssl.a \</span><br><span class="line">	$(PROJBASE)/lib/libcrypto.a\</span><br><span class="line">	$(PROJBASE)/lib/libz.a\</span><br><span class="line">	$(PROJBASE)/lib/libcares.a\</span><br><span class="line"></span><br><span class="line">SHARED_LIB_DIR=</span><br><span class="line">DEBUG_SHARED_LIB= -pthread -ldl -lrt</span><br><span class="line">RELEASE_SHARED_LIB= -pthread -ldl -lrt</span><br><span class="line"></span><br><span class="line">#########################################</span><br><span class="line">#              compiler                 #</span><br><span class="line">#########################################</span><br><span class="line">include $(PROJBASE)/build/makefile.compiler.gcc</span><br><span class="line"></span><br><span class="line">#########################################</span><br><span class="line">#              rules                    #</span><br><span class="line">#########################################</span><br><span class="line">include $(PROJBASE)/build/makefile.compile.rules</span><br></pre></td></tr></table></figure>
+<ul>
+<li>PROJBASE即工程根目录。.lib目录就在根目录下。</li>
+<li>PRE_CMD/POST_CMD 分别是编译前和编译后执行的命令。</li>
+<li>SUBDIR 是当前目录下的源文件目录，可包含多个，自动编译.c/.cpp</li>
+<li>EXCEPT_FILES 是不需要编译的文件列表</li>
+<li>INC_DIR 头文件查找路径</li>
+<li>DEBUG_STATIC_LIB/RELEASE_STATIC_LIB 分别是依赖的debug和release版本的静态库。</li>
+<li>SHARED_LIB_DIR 是动态库查找路径</li>
+<li>DEBUG_SHARED_LIB/RELEASE_SHARED_LIB 分别是依赖的debug和release版的动态库。</li>
+<li>makefile.compiler.gcc定义编译器，代码如下，我们warning当error处理，同时忽略了部分warning，-Wl,–eh-frame-hdr是tcmalloc的建议，其他没太多东西，备查。</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">CC=g++</span><br><span class="line">cc=gcc</span><br><span class="line">AR=ar</span><br><span class="line">RANLIB=ranlib</span><br><span class="line">ARFLAGS=rcs</span><br><span class="line">SHAREDFLAG= -fPIC -shared</span><br><span class="line">DEBUG_FLAGS=-g -DDEBUG -D_FILE_OFFSET_BITS=64</span><br><span class="line">RELEASE_FLAGS=-g -O3 -D_FILE_OFFSET_BITS=64</span><br><span class="line">CFLAGs=-Wall -Werror -fno-strict-aliasing -Wno-deprecated-declarations -Wno-array-bounds $(INC_DIR)</span><br><span class="line">CXXFLAGS=-Wall -Werror -fno-strict-aliasing -Wno-deprecated-declarations -Wno-array-bounds $(INC_DIR) </span><br><span class="line">LDFLAGS=-Wl,--eh-frame-hdr $(SHARED_LIB_DIR) $(STATIC_LIB) $(SHARED_LIB) </span><br><span class="line">DEBUG_DIRNAME=Debug</span><br><span class="line">RELEASE_DIRNAME=Release</span><br><span class="line">DEBUG_SUFFIX=_d</span><br><span class="line">RELEASE_SUFFIX=_r</span><br></pre></td></tr></table></figure>
+<ul>
+<li>makefile.compile.rules 即本文所要讲的工具了。</li>
+</ul>
+<p>OK，设计思想就这样，定义变量，其他交给makefile.compile.rules，如下。</p>
+<h1 id="2-2-定义输出"><a href="#2-2-定义输出" class="headerlink" title="2.2. 定义输出"></a>2.2. 定义输出</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">#########################################</span><br><span class="line">#          OUT DIR                      #</span><br><span class="line">#########################################</span><br><span class="line">DIR_LIST=$(subst /, \ , $(CURDIR))</span><br><span class="line">MOD_NAME=$(word $(words $(DIR_LIST)), $(DIR_LIST))</span><br><span class="line"></span><br><span class="line">DEBUG_BIN_TARGET=$(if $(APPDIR), $(MOD_NAME)$(DEBUG_SUFFIX))</span><br><span class="line">DEBUG_SHARED_TARGET=$(if $(COMPILE_SHARED),lib$(MOD_NAME)$(DEBUG_SUFFIX).so)</span><br><span class="line">DEBUG_STATIC_TARGET=lib$(MOD_NAME)$(DEBUG_SUFFIX).a</span><br><span class="line">DEBUG_TARGET = $(DEBUG_BIN_TARGET) $(DEBUG_SHARED_TARGET) $(DEBUG_STATIC_TARGET)</span><br><span class="line"></span><br><span class="line">RELEASE_BIN_TARGET=$(if $(APPDIR), $(MOD_NAME)$(RELEASE_SUFFIX))</span><br><span class="line">RELEASE_SHARED_TARGET=$(if $(COMPILE_SHARED),lib$(MOD_NAME)$(RELEASE_SUFFIX).so)</span><br><span class="line">RELEASE_STATIC_TARGET=lib$(MOD_NAME)$(RELEASE_SUFFIX).a</span><br><span class="line">RELEASE_TARGET = $(RELEASE_BIN_TARGET) $(RELEASE_SHARED_TARGET) $(RELEASE_STATIC_TARGET)</span><br><span class="line"></span><br><span class="line">OUTDIR_PREFIX=$(PROJBASE)/.lib</span><br><span class="line">OUTDIR=$(OUTDIR_PREFIX)/$(MOD_NAME)</span><br><span class="line">#ALL_TARGET = $(addprefix $(OUTDIR_PREFIX)/, $(TARGET))</span><br><span class="line"></span><br><span class="line">DEBUG_DIR=$(PROJBASE)/$(DEBUG_DIRNAME)</span><br><span class="line">RELEASE_DIR=$(PROJBASE)/$(RELEASE_DIRNAME)</span><br><span class="line">MOD_DEBUG_OUTDIR=$(DEBUG_DIR)/$(MOD_NAME)</span><br><span class="line">MOD_RELEASE_OUTDIR=$(RELEASE_DIR)/$(MOD_NAME)</span><br></pre></td></tr></table></figure>
+<ul>
+<li>MOD_NAME即最后一层目录</li>
+<li>DEBUG_SUFFIX/RELEASE_SUFFIX 是前面说的”_d”/“_r”后缀</li>
+<li>然后定义了输出的静态库</li>
+<li>OUTDIR是本模块的输出目录，”.lib”下的目录</li>
+<li>后面DEBUG_DIR/RELEASE_DIR是最后正式release的文件，不包含.o文件</li>
+<li>MOD_DEBUG_OUTDIR/MOD_RELEASE_OUTDIR是本模块的release文件。</li>
+</ul>
+<h1 id="2-2-定义临时输出文件（-o文件"><a href="#2-2-定义临时输出文件（-o文件" class="headerlink" title="2.2. 定义临时输出文件（.o文件)"></a>2.2. 定义临时输出文件（.o文件)</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">#########################################</span><br><span class="line">#               OBJECTS                 #</span><br><span class="line">#########################################</span><br><span class="line">CFILES=$(filter-out $(EXCEPT_FILES), \</span><br><span class="line">	$(foreach DIR, $(SUBDIR), $(wildcard $(DIR)/*.c)) )</span><br><span class="line">CPPFILES=$(filter-out $(EXCEPT_FILES), \</span><br><span class="line">	$(foreach DIR, $(SUBDIR), $(wildcard $(DIR)/*.cpp)) \</span><br><span class="line">        $(TOLUACPP) )</span><br><span class="line">CCFILES=$(filter-out $(EXCEPT_FILES), \</span><br><span class="line">	$(foreach DIR, $(SUBDIR), $(wildcard $(DIR)/*.cc)) )</span><br><span class="line">TMP_OBJECTS=$(patsubst %.cpp, %.o, $(CPPFILES)) \</span><br><span class="line">	$(patsubst %.cc, %.o, $(CCFILES)) \</span><br><span class="line">           $(patsubst %.c, %.o, $(CFILES)) </span><br><span class="line">OUTSUBDIR=$(addprefix $(OUTDIR)/, $(SUBDIR) \</span><br><span class="line">    $(if $(TOLUACPP), LuaObject))</span><br><span class="line">    </span><br><span class="line">TMP_PATH_OBJECTS=$(addprefix $(OUTDIR)/, $(TMP_OBJECTS))</span><br><span class="line">DEBUG_OBJECTS=$(patsubst %.o, %$(DEBUG_SUFFIX).o, $(TMP_PATH_OBJECTS))</span><br><span class="line">RELEASE_OBJECTS=$(patsubst %.o, %$(RELEASE_SUFFIX).o, $(TMP_PATH_OBJECTS))</span><br></pre></td></tr></table></figure>
+<ul>
+<li>CFILES/CPPFILES/CCFILES 是所有源代码文件的相对路径</li>
+<li>TMP_OBJECTS 是所有.o文件的相对路径</li>
+<li>OUTSUBDIR 是需要新建的.lib目录文件</li>
+<li>TMP_PATH_OBJECTS 是所有.o文件的绝对路径</li>
+<li>DEBUG_OBJECTS/RELEASE_OBJECTS 是给.o文件加上”_d”/“_r”后缀</li>
+</ul>
+<h1 id="2-3-UnitTest的相关文件"><a href="#2-3-UnitTest的相关文件" class="headerlink" title="2.3. UnitTest的相关文件"></a>2.3. UnitTest的相关文件</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">#########################################</span><br><span class="line">#        Test    Target                 #</span><br><span class="line">#########################################</span><br><span class="line">TEST_DIR=UnitTest</span><br><span class="line">TEST_CPP_FILES=$(foreach DIR, $(TEST_DIR), $(wildcard $(DIR)/*.cpp))</span><br><span class="line">TEST_OUT_SUBDIR=$(addprefix $(OUTDIR)/, $(TEST_DIR))</span><br><span class="line"></span><br><span class="line">DEBUG_TMP_TEST_OBJECTS=$(patsubst %.cpp, %$(DEBUG_SUFFIX).o, $(TEST_CPP_FILES))</span><br><span class="line">DEBUG_TEST_OBJECTS=$(addprefix $(OUTDIR)/, $(DEBUG_TMP_TEST_OBJECTS))</span><br><span class="line">DEBUG_TEST_TARGET=$(basename $(notdir $(DEBUG_TEST_OBJECTS)))</span><br><span class="line"></span><br><span class="line">RELEASE_TMP_TEST_OBJECTS=$(patsubst %.cpp, %$(RELEASE_SUFFIX).o, $(TEST_CPP_FILES))</span><br><span class="line">RELEASE_TEST_OBJECTS=$(addprefix $(OUTDIR)/, $(RELEASE_TMP_TEST_OBJECTS))</span><br><span class="line">RELEASE_TEST_TARGET=$(basename $(notdir $(RELEASE_TEST_OBJECTS)))</span><br><span class="line"></span><br><span class="line">TEST_OUTDIR=$(OUTDIR_PREFIX)/test</span><br><span class="line">TEST_FILE=$(foreach DIR, $(TEST_DIR), $(wildcard $(DIR)/*.lua) \</span><br><span class="line">                                     $(wildcard $(DIR)/*.xml) \</span><br><span class="line">                                     $(wildcard $(DIR)/*.pcap))</span><br><span class="line">TEST_OUT_FILE=$(addprefix $(TEST_OUTDIR)/, $(notdir $(TEST_FILE)))</span><br></pre></td></tr></table></figure>
+<p>和前面类似</p>
+<h1 id="2-4-定义增量编译所需要的依赖文件"><a href="#2-4-定义增量编译所需要的依赖文件" class="headerlink" title="2.4. 定义增量编译所需要的依赖文件"></a>2.4. 定义增量编译所需要的依赖文件</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">#########################################</span><br><span class="line">#               Depend                  #</span><br><span class="line">#########################################</span><br><span class="line">DEPENDFILES=$(patsubst %.o, %.d, $(TMP_PATH_OBJECTS))</span><br><span class="line">DEPENDTARGET=$(patsubst %.d, %.d.tmp, $(DEPENDFILES))</span><br><span class="line">TESTDEPENDFILES=$(patsubst %.o, %.d, $(TEST_OBJECTS))</span><br><span class="line">TESTDEPENDTARGET=$(patsubst %.d, %.d.tmp, $(TESTDEPENDFILES))</span><br></pre></td></tr></table></figure>
+<p>我们会在.d文件里临时存放.cpp所依赖的头文件</p>
+<h1 id="2-5-顶层规则"><a href="#2-5-顶层规则" class="headerlink" title="2.5. 顶层规则"></a>2.5. 顶层规则</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">test: CFLAGS+=$(DEBUG_FLAGS)</span><br><span class="line">test: CXXFLAGS+=$(DEBUG_FLAGS)</span><br><span class="line">test: MOD_OUTDIR=$(MOD_DEBUG_OUTDIR)</span><br><span class="line">test: DEST_OUTDIR=$(DEBUG_DIR)</span><br><span class="line">test: SHARED_LIB+=$(DEBUG_SHARED_LIB)</span><br><span class="line">test: STATIC_LIB+=$(DEBUG_STATIC_LIB)</span><br><span class="line">test: BUILD_SUFFIX=$(DEBUG_SUFFIX)</span><br><span class="line">test: prepare $(DEBUG_TEST_TARGET)</span><br><span class="line">	@if [ &quot;&quot; != &quot;$(POST_CMD)&quot; ]; then \</span><br><span class="line">		$(POST_CMD); \</span><br><span class="line">	fi;</span><br><span class="line"></span><br><span class="line">rtest: CFLAGS+=$(RELEASE_FLAGS)</span><br><span class="line">rtest: CXXFLAGS+=$(RELEASE_FLAGS)</span><br><span class="line">rtest: MOD_OUTDIR=$(MOD_RELEASE_OUTDIR)</span><br><span class="line">rtest: DEST_OUTDIR=$(RELEASE_DIR)</span><br><span class="line">rtest: SHARED_LIB+=$(RELEASE_SHARED_LIB)</span><br><span class="line">rtest: STATIC_LIB+=$(RELEASE_STATIC_LIB)</span><br><span class="line">rtest: BUILD_SUFFIX=$(RELEASE_SUFFIX)</span><br><span class="line">rtest: prepare  $(RELEASE_TEST_TARGET)</span><br><span class="line">	@if [ &quot;&quot; != &quot;$(POST_CMD)&quot; ]; then \</span><br><span class="line">		$(POST_CMD); \</span><br><span class="line">	fi;</span><br><span class="line"></span><br><span class="line">prepare:</span><br><span class="line">	@if [ &quot;&quot; != &quot;$(PRE_CMD)&quot; ]; then \</span><br><span class="line">		$(PRE_CMD); \</span><br><span class="line">	fi;</span><br></pre></td></tr></table></figure>
+<p>不同的target应用不同的变量，执行pre/post相关操作。debug版本是make test，release版本是make rtest。</p>
+<h1 id="2-6-下层规则"><a href="#2-6-下层规则" class="headerlink" title="2.6. 下层规则"></a>2.6. 下层规则</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$(DEBUG_TEST_TARGET): $(MOD_OUTDIR) $(AUTOTARGET) $(DEBUG_TARGET) testdepend $(TEST_OUT_SUBDIR) $(DEBUG_TEST_OBJECTS) $(TEST_OUTDIR) $(TEST_OUT_FILE) $(SYMBOL_OUTDIR) deploy_common</span><br><span class="line">	$(call build_test_exe,$@, $(DEBUG_OBJECTS)) # no blank before $@</span><br><span class="line"></span><br><span class="line">$(RELEASE_TEST_TARGET): $(MOD_OUTDIR) $(AUTOTARGET) $(RELEASE_TARGET) testdepend $(TEST_OUT_SUBDIR) $(RELEASE_TEST_OBJECTS) $(TEST_OUTDIR) $(TEST_OUT_FILE) $(SYMBOL_OUTDIR) deploy_common</span><br><span class="line">	$(call build_test_exe,$@, $(RELEASE_OBJECTS)) # no blank before $@</span><br></pre></td></tr></table></figure>
+<h1 id="2-6-1-新建各种目录"><a href="#2-6-1-新建各种目录" class="headerlink" title="2.6.1. 新建各种目录"></a>2.6.1. 新建各种目录</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">$(MOD_OUTDIR):</span><br><span class="line">	@if [ ! -d $@ ]; then mkdir -p $@; fi;</span><br><span class="line"></span><br><span class="line">$(DEBUG_DIR):</span><br><span class="line">	@if [ ! -d $@ ]; then mkdir -p $@; fi;</span><br><span class="line"></span><br><span class="line">$(RELEASE_DIR):</span><br><span class="line">	@if [ ! -d $@ ]; then mkdir -p $@; fi;</span><br><span class="line"></span><br><span class="line">$(MOD_DEBUG_OUTDIR):$(DEBUG_DIR)</span><br><span class="line">	@if [ ! -d $@ ]; then mkdir -p $@; fi;</span><br><span class="line"></span><br><span class="line">$(MOD_RELEASE_OUTDIR): $(RELEASE_DIR)</span><br><span class="line">	@if [ ! -d $@ ]; then mkdir -p $@; fi;</span><br><span class="line"></span><br><span class="line">$(OUTDIR):$(OUTDIR_PREFIX)</span><br><span class="line">	@if [ ! -d $@ ]; then mkdir -p $@; fi;</span><br><span class="line"></span><br><span class="line">$(OUTDIR_PREFIX):</span><br><span class="line">	@if [ ! -d $@ ]; then mkdir -p $@; fi;</span><br><span class="line"></span><br><span class="line">$(TEST_OUTDIR):</span><br><span class="line">	@if [ ! -d $@ ]; then mkdir -p $@; fi;</span><br><span class="line"></span><br><span class="line">$(TEST_OUT_SUBDIR):</span><br><span class="line">	@if [ ! -d $@ ]; then mkdir -p $@; fi;</span><br><span class="line"></span><br><span class="line">$(OUTSUBDIR):</span><br><span class="line">	@if [ ! -d $@ ]; then mkdir -p $@; fi;</span><br><span class="line"></span><br><span class="line">$(SYMBOL_OUTDIR):$(OUTDIR_PREFIX)</span><br><span class="line">	@if [ ! -d $@ ]; then mkdir -p $@; fi;</span><br></pre></td></tr></table></figure>
+<h1 id="2-6-2-增量编译-o"><a href="#2-6-2-增量编译-o" class="headerlink" title="2.6.2. 增量编译.o"></a>2.6.2. 增量编译.o</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">-include $(DEPENDFILES) $(TESTDEPENDFILES)</span><br><span class="line">$(OUTDIR)/%.d.tmp:%.cc</span><br><span class="line">	@echo &quot;building dependancy for $&lt;...&quot;</span><br><span class="line">	@set -e; rm -f $@ $(OUTDIR)/$*.d; \</span><br><span class="line">	($(CC) $(CXXFLAGS) -MM -c $&lt; &gt; $@ || rm -f $@) &amp;&amp;  \</span><br><span class="line">	sed &apos;s,\(.*\)\.o[ :]*,$(OUTDIR)/$*.o $@: ,g&apos; &lt;$@ &gt;$(OUTDIR)/$*.d; </span><br><span class="line"></span><br><span class="line">$(OUTDIR)/%.d.tmp:%.cpp</span><br><span class="line">	@echo &quot;building dependancy for $&lt;...&quot;</span><br><span class="line">	@set -e; rm -f $@ $(OUTDIR)/$*.d; \</span><br><span class="line">	($(CC) $(CXXFLAGS) -MM -c $&lt; &gt; $@ || rm -f $@) &amp;&amp;  \</span><br><span class="line">	sed &apos;s,\(.*\)\.o[ :]*,$(OUTDIR)/$*.o $@: ,g&apos; &lt;$@ &gt;$(OUTDIR)/$*.d; </span><br><span class="line"></span><br><span class="line">$(OUTDIR)/%.d.tmp:%.c</span><br><span class="line">	@echo &quot;building dependancy for $&lt;...&quot;</span><br><span class="line">	@set -e; rm -f $@ $(OUTDIR)/$*.d; \</span><br><span class="line">	($(cc) $(CXXFLAGS) -MM -c $&lt; &gt; $@ || rm -f $@) &amp;&amp;  \</span><br><span class="line">	sed &apos;s,\(.*\)\.o[ :]*,$(OUTDIR)/$*.o $@: ,g&apos; &lt;$@ &gt;$(OUTDIR)/$*.d; </span><br><span class="line"></span><br><span class="line">$(OUTDIR)/%$(DEBUG_SUFFIX).o:%.cc $(OUTDIR)/%.d.tmp </span><br><span class="line">	$(CC) $(CXXFLAGS) -c $&lt; -o $@</span><br><span class="line"></span><br><span class="line">$(OUTDIR)/%$(DEBUG_SUFFIX).o:%.cpp $(OUTDIR)/%.d.tmp</span><br><span class="line">	$(CC) $(CXXFLAGS) -c $&lt; -o $@</span><br><span class="line"></span><br><span class="line">$(OUTDIR)/%$(DEBUG_SUFFIX).o:%.c $(OUTDIR)/%.d.tmp</span><br><span class="line">	$(cc) $(CXXFLAGS) -c $&lt; -o $@</span><br><span class="line"></span><br><span class="line">$(OUTDIR)/%$(RELEASE_SUFFIX).o:%.cc $(OUTDIR)/%.d.tmp</span><br><span class="line">	$(CC) $(CXXFLAGS) -c $&lt; -o $@</span><br><span class="line"></span><br><span class="line">$(OUTDIR)/%$(RELEASE_SUFFIX).o:%.cpp $(OUTDIR)/%.d.tmp</span><br><span class="line">	$(CC) $(CXXFLAGS) -c $&lt; -o $@</span><br><span class="line"></span><br><span class="line">$(OUTDIR)/%$(RELEASE_SUFFIX).o:%.c $(OUTDIR)/%.d.tmp</span><br><span class="line">	$(cc) $(CXXFLAGS) -c $&lt; -o $@</span><br></pre></td></tr></table></figure>
+<p>.o文件依赖.d.tmp和源文件，%d.tmp依赖与源文件，调用gcc生成源文件的依赖头文件，然后将这些文件include进来。这样，依赖的头文件或源文件有改动，都会再重新编译。</p>
+<h1 id="2-7-抽出来的函数"><a href="#2-7-抽出来的函数" class="headerlink" title="2.7. 抽出来的函数"></a>2.7. 抽出来的函数</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line">#########################################</span><br><span class="line">#               Function                #</span><br><span class="line">#########################################</span><br><span class="line"># $(1): static_target</span><br><span class="line"># $(2): objects</span><br><span class="line">define build_static_lib</span><br><span class="line">	$(AR) $(ARFLAGS) $(OUTDIR_PREFIX)/$(1) $(2)</span><br><span class="line">	@echo &quot; $(2) &quot; &gt; $(OUTDIR_PREFIX)/$(MOD_NAME).objectlist</span><br><span class="line">endef</span><br><span class="line"></span><br><span class="line"># $(1): shared_target</span><br><span class="line"># $(2): objects</span><br><span class="line">define build_shared_lib</span><br><span class="line">	$(CC) $(SHAREDFLAG) -o $(OUTDIR_PREFIX)/$(1) $(2)</span><br><span class="line">	@echo &quot; $(2) &quot; &gt; $(OUTDIR_PREFIX)/$(MOD_NAME).objectlist</span><br><span class="line">endef</span><br><span class="line"></span><br><span class="line"># $(1): test_target</span><br><span class="line"># $(2): objects</span><br><span class="line">#	@$(SYMBOL_DUMPPER) $(TEST_OUTDIR)/$(MOD_NAME)$@ &gt; $(SYMBOL_OUTDIR)/$(MOD_NAME)$@.sym</span><br><span class="line">#	@RT_SYMBOL_DIR=$(SYMBOL_OUTDIR)/`head -n1 $(SYMBOL_OUTDIR)/$(MOD_NAME)$@.sym | awk &apos;&#123;print $$5;&#125;&apos;`/`head -n1 $(SYMBOL_OUTDIR)/$(MOD_NAME)$@.sym | awk &apos;&#123;print $$4;&#125;&apos;`; \</span><br><span class="line">#	if [ ! -d &quot;$$RT_SYMBOL_DIR&quot; ]; then mkdir -p &quot;$$RT_SYMBOL_DIR&quot;; fi; \</span><br><span class="line">#	cp $(SYMBOL_OUTDIR)/$(MOD_NAME)$@.sym &quot;$$RT_SYMBOL_DIR&quot;/; \</span><br><span class="line">#	rm $(SYMBOL_OUTDIR)/$(MOD_NAME)$@.sym;</span><br><span class="line">define build_test_exe </span><br><span class="line">	$(CC) $(CXXFLAGS) $(OUTDIR)/$(TEST_DIR)/$(1).o $(2) $(LDFLAGS) -o $(TEST_OUTDIR)/$(MOD_NAME)$(1)</span><br><span class="line">	@mkdir -p $(MOD_OUTDIR) </span><br><span class="line">	@cp $(TEST_OUTDIR)/$(MOD_NAME)$(1) $(MOD_OUTDIR)/</span><br><span class="line">	@cp $(TEST_DIR)/*.svn $(MOD_OUTDIR)/</span><br><span class="line">	@cd UnitTest/ \</span><br><span class="line">        &amp;&amp; find script/  -name &quot;*.lua&quot; |xargs -n 1 -i dirname &#123;&#125; |sort |uniq | xargs -n 1 -i mkdir -p $(MOD_OUTDIR)/&#123;&#125; \</span><br><span class="line">	    &amp;&amp; find script/  -name &quot;*.lua&quot; |sed -e &apos;s/\.lua//g&apos; |xargs -n 1 -i bash -c &apos;LUA_PATH=$(PROJBASE)/lib/bin/?.lua $(PROJBASE)/lib/bin/luac -O3 -bg &#123;&#125;.lua $(MOD_OUTDIR)/&#123;&#125;.lc || exit 255&apos; </span><br><span class="line">	@cd $(MOD_OUTDIR)/ \</span><br><span class="line">        &amp;&amp; ln -sf ../resource . \</span><br><span class="line">        &amp;&amp; ln -sf $(MOD_NAME)$(1) `echo &quot;$(MOD_NAME)$(1)&quot; | sed -e &apos;s/$(DEBUG_SUFFIX)\|$(RELEASE_SUFFIX)$$//&apos;`  </span><br><span class="line">	@cd $(TEST_OUTDIR)/ \</span><br><span class="line">        &amp;&amp; ln -sf $(MOD_NAME)$(1) `echo &quot;$(MOD_NAME)$(1)&quot; | sed -e &apos;s/$(DEBUG_SUFFIX)\|$(RELEASE_SUFFIX)$$//&apos;`  </span><br><span class="line">	@cd $(MOD_OUTDIR)/script \</span><br><span class="line">        &amp;&amp; ln -sf ../../luacommon . </span><br><span class="line">endef</span><br></pre></td></tr></table></figure>
+<h1 id="2-8-顶层的Makefile"><a href="#2-8-顶层的Makefile" class="headerlink" title="2.8. 顶层的Makefile"></a>2.8. 顶层的Makefile</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line">#########################################</span><br><span class="line">#                top dir                #</span><br><span class="line">#########################################</span><br><span class="line">PROJBASE=$(CURDIR)</span><br><span class="line">RELEASE_DIR=Debug Release</span><br><span class="line"></span><br><span class="line">#########################################</span><br><span class="line">#                target                 #</span><br><span class="line">#########################################</span><br><span class="line">SUBDIR= sceneobj\</span><br><span class="line">	server/bfserver  \</span><br><span class="line">	server/dbserver  \</span><br><span class="line">	server/gameserver  \</span><br><span class="line">	server/loginserver  \</span><br><span class="line">	server/robotclient \</span><br><span class="line">	server/logserver \</span><br><span class="line"></span><br><span class="line">#########################################</span><br><span class="line">#            rules                      #</span><br><span class="line">#########################################</span><br><span class="line">all: msg $(SUBDIR)</span><br><span class="line">	@for DIR in $(SUBDIR);  \</span><br><span class="line">	do                     \</span><br><span class="line">		make -C $$DIR || exit -1; \</span><br><span class="line">	done                  </span><br><span class="line"></span><br><span class="line">debug: all</span><br><span class="line"></span><br><span class="line">test: debug $(SUBDIR) $(OUTDIR)</span><br><span class="line">	@for DIR in $(SUBDIR);  \</span><br><span class="line">	do                     \</span><br><span class="line">		make test -C $$DIR || exit -1; \</span><br><span class="line">	done                  </span><br><span class="line"></span><br><span class="line">rtest: release $(SUBDIR) $(OUTDIR)</span><br><span class="line">	@for DIR in $(SUBDIR);  \</span><br><span class="line">	do                     \</span><br><span class="line">		make rtest -C $$DIR || exit -1; \</span><br><span class="line">	done                  </span><br><span class="line"></span><br><span class="line">clean: $(SUBDIR)</span><br><span class="line">	@rm -rf $(RELEASE_DIR)</span><br><span class="line">	@for DIR in $(SUBDIR);  \</span><br><span class="line">	do                     \</span><br><span class="line">		make clean -C $$DIR || exit -1;  \</span><br><span class="line">	done                  </span><br><span class="line"></span><br><span class="line">release: msg</span><br><span class="line">	@for DIR in $(SUBDIR);  \</span><br><span class="line">	do                     \</span><br><span class="line">		make release -C $$DIR || exit -1; \</span><br><span class="line">	done                  </span><br><span class="line"></span><br><span class="line">msg:</span><br><span class="line">	lua $(PROJBASE)/server/luacommon/gen_msg_header.lua $(shell pwd)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">.PHONY:all test rtest clean release</span><br></pre></td></tr></table></figure>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">server framework</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2019/01/04/framework-nd_Makefile/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-framework-nd_singleton" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
@@ -1029,212 +1161,6 @@
 
 
   
-    <article id="post-CN-AndroidIl2cppPatchReadMeFirst" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/11/18/CN-AndroidIl2cppPatchReadMeFirst/">Unity Android APP il2cpp热更完美解决方案</a>
-    </h1>
-  
-
-        
-        <a href="/2018/11/18/CN-AndroidIl2cppPatchReadMeFirst/" class="archive-article-date">
-  	<time datetime="2018-11-18T11:32:10.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2018-11-18</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h1 id="1-简介"><a href="#1-简介" class="headerlink" title="1. 简介"></a>1. 简介</h1><p>这是Unity Android APP il2cpp热更解决方案的Demo（<a href="https://github.com/noodle1983/UnityAndroidIl2cppPatchDemo/" target="_blank" rel="noopener">Git地址</a>）的说明。</p>
-<p>和现有的热更解决方案不同的是，他不会引入多余的语言（只是UnityScript，c#…），对Unity程序设计和编码没有任何限制。你可以在预置和场景里的GameObject上添加任何的Compnents组件，需要序列化的和不需要序列化的，他们都是可以热更的，也不需要做额外的标记处理。简而言之，在此方案下，Unity的所有资源和脚本，都是可以热更的。</p>
-<p>本文接下来将介绍如何去制作热更文件和如何应用这些热更文件。为了简化Demo的设计，Demo包含的热更文件会事先以全量更新的方式制作好，一起打到了Apk里面。具体到项目中热更文件得放服务器，正式上线得放CDN，以增量更新的方式捣鼓出和文中一样的目录结构就OK了。</p>
-<h1 id="2-方案总览"><a href="#2-方案总览" class="headerlink" title="2. 方案总览"></a>2. 方案总览</h1><p>Unity在以il2cpp方式导出Android工程（或者Apk文件）的时候，代码会被编译成libil2cpp，而相关的资源、配置和序列化数据会以他们各自的格式导出到android的assets目录（assets/bin/Data）。这两部分，libil2cpp和assets目录，必须匹配（即需要在同一次打包中提取，可能有的变了，有的没变，增量方式只提取变化的部分）才能正常工作，不然Unity会在启动时崩溃。本方案就是热更这两部分。</p>
-<p>热更的正式流程如下图.</p>
-<p><img src="https://github.com/noodle1983/private/raw/master/UnityAndroidIl2cppPatch/patch_workflow.png" alt="运行时流程图"></p>
-<p>流程说明：</p>
-<ul>
-<li>步骤1，在Unity的逻辑之前，libbootstrap会检查本地是否有Patch. Apk安装后，没应用过任何热更，本地是不会有Patch文件的，走no流程。如果热更过，则会有Patch目录，走yes流程。Patch目录如何准备，后面会将到。</li>
-<li>步骤2，加载Patch目录对应架构（arm/x86）的libil2cpp库，并应用assets目录的更新文件。</li>
-<li>步骤3，开始Unity的流程，进入Unity第一个场景，并执行相关的Unity Script，一般是C#，我们都以C#举例。</li>
-<li>步骤4，检查服务端是否有新的patch，这步demo没有演示，需要自己实现。</li>
-<li>步骤5，下载新的patch，这步demo也没有演示，需要自己实现</li>
-<li>步骤6，根据规则准备patch目录，详细规则会在后面描述。在Demo中只是将全量更新包解压，全量更新包打包的时候目录结构就是对的，所以不需要做其他的处理。</li>
-<li><p>步骤7，调用libbootstrap的接口设置patch目录，因为libil2cpp已经加载进进程，所以需要重启APP，从新的patch目录加载patch。这步Demo中有设置patch目录的例子。</p>
-</li>
-<li><p>步骤8，重启APP，Demo提供了纯C#代码。</p>
-</li>
-<li>步骤9，没有新的Patch，就正常进入游戏了。</li>
-</ul>
-<p>流程里更详细的描述和如何生成Patch文件，见第三章。</p>
-<h1 id="3-Demo详述"><a href="#3-Demo详述" class="headerlink" title="3. Demo详述"></a>3. Demo详述</h1><h2 id="3-1-Demo目录结构"><a href="#3-1-Demo目录结构" class="headerlink" title="3.1.    Demo目录结构"></a>3.1.    Demo目录结构</h2><p>工程所有文件均置于AndroidIl2cppPatchDemo目录下。各文件目录说明如下表。</p>
-<table>
-<thead>
-<tr>
-<th>名字</th>
-<th>说明</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Editor/AndroidBuilder.cs</td>
-<td>这个文件包含所有从导出Android工程，到输出Patch和生成Apk安装文件的代码。</td>
-</tr>
-<tr>
-<td>Editor/Exe/zip.exe</td>
-<td>zip压缩工具，用来将asset/bin/Data下的文件压缩成标准zip格式。</td>
-</tr>
-<tr>
-<td>Plugin/</td>
-<td>包含libbootstrap库.</td>
-</tr>
-<tr>
-<td>PrebuiltPatches/</td>
-<td>包含预先生成的两个全量热更新版本。</td>
-</tr>
-<tr>
-<td>Scene/*.unity</td>
-<td>演示场景，母包和版本1仅有0.unity，版本2增加了1.unity，测试新增场景和脚本的patch</td>
-</tr>
-<tr>
-<td>Script/Bootstrap.cs</td>
-<td>这个文件定义了libbootstrap的c#接口和重启APP的纯c#实现</td>
-</tr>
-<tr>
-<td>Script/VersionSettor.cs</td>
-<td>这个脚本用于运行时准备相应的热更版本目录。</td>
-</tr>
-<tr>
-<td>Script/UI/MessageBoxUI.cs</td>
-<td>这是一个简单的运行时MessageBox控制器。</td>
-</tr>
-<tr>
-<td>ZipLibrary/</td>
-<td>c#版的压缩解压工具，输出的zip文件为非标准文件，Patch制作中不能用于asset/bin/Data文件的压缩，仅用于libil2cpp库的压缩，运行时用于全量热更包的解压.</td>
-</tr>
-</tbody>
-</table>
-<p>所有文件就这么多，项目用git管理，master分支为母包分支，version1和version2分支为热更1和热更2分支，分支间会有些细微的差别，version1主要测试序列化数据，version2添加了新场景和新脚本，具体可以diff查看。下面会详细描述打包过程和如何应用热更文件。</p>
-<h2 id="3-2-打包过程"><a href="#3-2-打包过程" class="headerlink" title="3.2.    打包过程"></a>3.2.    打包过程</h2><p>所有的打包逻辑在文件Editor\AndroidBuilder.cs里。展开主菜单<strong>AndroidBuilder</strong>, 可以看到有5步，为了和热更启动流程区分，我们就叫他过程。</p>
-<ul>
-<li>过程1：以il2cpp的方式，导出Gradle Android工程。选择Gradle Android工程，而不是ADT Android工程，只是因为Unity2018不再支持ADT方式。Demo并不依赖AndroidStudio，只是导出的Android工程目录结构是以Gradle的方式注释，之后的构建步骤都是调用原始JDK/SDK的方式。Demo这部分的代码可以复用，但需要根据项目需求做一些修改。</li>
-</ul>
-<ul>
-<li><p>过程2：需要修改一下Android工程，因为libbootstrap需要在进入Unity的帧循环前，检查加载本地准备好的patch。大多数情况，你可以复用这个步骤的代码。但是如果你的项目修改了Unity Java的继承体系，你需要检查一下这块代码是否有调用到。如果没有调用到，后面Unity帧循环中的逻辑和资源，用的都是Apk内的相应文件。</p>
-</li>
-<li><p>过程3：生成热更文件。如在第二章所述，patch分为两部分，il2cpp库和assets/bin/Data目录。具体做法代码均有提供，需要注意的是必须遵守各个文件的命名方式和相对路径。各个文件均有压缩，对于增量包，如果压缩前的文件和之前相比没有变化，则不需要制作对应的压缩文件。这部分制作压缩部分的代码可复用，增量部分需要自己实现，热更文件最好也加进版本管理（svn/git/…）中。</p>
-</li>
-<li><p>过程4: 生成打包的windows脚本。脚本仅依赖JDK/SDK命令，可复用。生成脚本后，Android工程就不依赖Unity了，可以随意替换文件，再次调用脚本生成新的Apk。需要注意的是，打包用的so动态库，是pkg_raw目录下的so文件，替换时请注意。首次会在Unity目录下生成keystore目录和相应的签名文件，可以将此签名替换，并修改导出脚本中的签名密码。</p>
-</li>
-<li><p>过程5: 执行过程4中的脚本，生成Apk安装文件，可复用。</p>
-</li>
-</ul>
-<p>主菜单AndroidBuilder下还提供了菜单“Running Step 1, 2, 4, 5 for the base version”，这是一键构建母包版本用的，母包不需要制作patch文件，所以少了过程3；和菜单“Runnnig Step 1-4 for patch versions”，这是一键构建Patch用的，因为在demo里，不需要导出Apk文件。</p>
-<p>关于打包这里得多说两句。 如果没有采用AssetBundle的方式打包，Unity会按各自格式，将所有场景和依赖输出到assets/bin/Data目录，这样子也是可以热更的。但是，不要这么做，因为这样做微小的改动会影响到多个文件，导致热更文件过大。最好是自己用AssetBundle的方式将资源做一个清晰的划分，打包好的AssetBundle放在assets下的其他目录。需要注意和libil2cpp库和assets/bin/Data的文件向匹配（保证是同一个版本的输出）。运行时可以重写AssetBundleManager.overrideBaseDownloadingURL加载最新的AssetBundle。</p>
-<h2 id="3-3-运行时应用热更文件"><a href="#3-3-运行时应用热更文件" class="headerlink" title="3.3.    运行时应用热更文件"></a>3.3.    运行时应用热更文件</h2><p>我们回顾一下第二章的流程图，结合打包过程和Demo的代码，做进一步的说明.</p>
-<p><img src="https://github.com/noodle1983/private/raw/master/UnityAndroidIl2cppPatch/patch_workflow.png" alt="运行时流程图"></p>
-<p>打包过程2里，在Unity的游戏逻辑之前，插入了三行Java代码。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">+        System.loadLibrary(&quot;main&quot;);</span><br><span class="line">+        System.loadLibrary(&quot;unity&quot;);</span><br><span class="line">+        System.loadLibrary(&quot;bootstrap&quot;);</span><br><span class="line">        mUnityPlayer = new UnityPlayer(this);</span><br></pre></td></tr></table></figure></p>
-<p>这三行代码保证了上图中步骤1-2能在步骤3之前执行，下一行mUnityPlayer的代码即开始了步骤3的执行。步骤3之后所有的逻辑，都是已热更过的il2cpp库里的Unity Script（c#，…）了。热更部分的逻辑如果有修改，会在热更后体现，如果这部分的bug不影响下次热更，则可以通过热更修复，否则应指引用户清除本地数据，以母包热更逻辑更新到最新。所以，在方案的应用中，仍需尽量保证热更部分的代码稳定，不能随意更改。</p>
-<p>如前所述，Demo里没有步骤4和步骤5的相关逻辑，步骤6中Patch的准备，Demo只是简单地将全量压缩包解压，相关逻辑在Script/VersionSettor.cs文件中。准备更新目录时，应保证libil2cpp部分被解压，命名方式和Demo保持一致，而assets_bin_Data下的文件不需要解压，应保证目录结构和Demo保持一致。如果是增量更新，Patch目录下的文件应该是相对于母包的修改文件。在持续热更中，应保证在步骤7前，本地当前Patch目录的完整性（保证运行中的App还能正常执行），新的Patch应新建目录，通过硬链接的形式从当前Patch目录中提取所需要的没变化的文件，准备好后执行步骤7，重启后将老Patch目录删除. 步骤7和步骤8的代码也在Script/VersionSettor.cs文件中，样子如下<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">//4. tell libboostrap.so to use the right patch after reboot</span><br><span class="line">string error = Bootstrap.use_data_dir(runtimePatchPath);</span><br><span class="line">if (!string.IsNullOrEmpty(error))</span><br><span class="line">&#123;</span><br><span class="line">    messageBox.Show(&quot;use failed. path:&quot; + zipLibil2cppPath + &quot;, error:&quot; + error, &quot;ok&quot;, () =&gt; &#123; messageBox.Close(); &#125;);</span><br><span class="line">    yield break;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">//5. reboot app</span><br><span class="line">yield return StartCoroutine(Restart());</span><br></pre></td></tr></table></figure></p>
-<h1 id="4-Verify-和-Build"><a href="#4-Verify-和-Build" class="headerlink" title="4. Verify 和 Build"></a>4. Verify 和 Build</h1><h2 id="4-1-Verify"><a href="#4-1-Verify" class="headerlink" title="4.1. Verify"></a>4.1. Verify</h2><p>安装预编译的Apk文件，点击按钮可以切换各个版本。</p>
-<p><a href="https://github.com/noodle1983/UnityAndroidIl2cppPatchDemo/releases/download/v1.0/UnityAndroidIl2cppPatchDemo.apk" target="_blank" rel="noopener">Apk链接</a></p>
-<h2 id="4-2-Build"><a href="#4-2-Build" class="headerlink" title="4.2. Build"></a>4.2. Build</h2><h3 id="依赖"><a href="#依赖" class="headerlink" title="依赖"></a>依赖</h3><ul>
-<li>Unity (我用Unity2017/Unity2018)</li>
-<li>JDK.(我用JDK1.8)</li>
-<li>Android SDK.(我用Android SDK platform 23 和 build tools 26.0.2（低于26.0.2，Unity2018不支持），最好是这两个版本，不然得重新下载)</li>
-<li>Android NDK r13b. (Unity il2cpp原来只支持这个版本，现在不知道放开没，反正这个版本没问题)</li>
-<li>Git </li>
-</ul>
-<h3 id="Build指引"><a href="#Build指引" class="headerlink" title="Build指引"></a>Build指引</h3><ul>
-<li><ol>
-<li>在Unity中（<strong>Edit</strong>-&gt;<strong>Preference</strong>-&gt;<strong>External tools</strong>）设置好 JDK/SDK/NDK 路径，打包代码里会从Unity中读取。</li>
-</ol>
-</li>
-<li><ol start="2">
-<li>如果你的Android SDK的build tools版本不是26.0.2，需要修改代码 AndroidBuilder.cs，第14行.</li>
-</ol>
-</li>
-<li><ol start="3">
-<li>如果你使用的Android platform不是android-23，修改代码 AndroidBuilder.cs，第15行.</li>
-</ol>
-</li>
-<li><ol start="4">
-<li>出母包，执行菜单 <strong>AndroidBuilder</strong>-&gt;<strong>Run Step 1, 2, 4, 5 for base version</strong>, 成功后会弹出文件管理器显示apk所在的目录.</li>
-</ol>
-</li>
-<li><ol start="5">
-<li>一般来说你不需要打Patch文件，如果要打，用git checkout version1或version2，执行菜单 <strong>AndroidBuilder</strong>-&gt;<strong>Run Step 1-4 for Patch Version</strong>。PrebuildPatches目录下的相应文件会被更新。</li>
-</ol>
-</li>
-</ul>
-<h1 id="5-剩下的工作和建议"><a href="#5-剩下的工作和建议" class="headerlink" title="5. 剩下的工作和建议"></a>5. 剩下的工作和建议</h1><p>打包部分</p>
-<ul>
-<li>设置部分需要根据项目实际做修改。</li>
-<li>热更文件的增量版本化管理。</li>
-</ul>
-<p>运行时部分</p>
-<ul>
-<li>检查新版本和下载热更文件。</li>
-<li>持续增量更新的Patch目录的准备。</li>
-<li>用Asset Bundle管理资源。</li>
-</ul>
-<p>另外，打包的工作尽量自动的一键化，一次化，除非你想在打包当晚集体晒月亮。另外，低成本的打包流程，大家都愿意在真机上看结果，利于产品的稳定。Demo其实提供了一套自动化的框架和脚本，理解透，化为己用，也是幸事一件。如果有更好的方式，欢迎讨论。</p>
-
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">Unity Android APP il2cpp</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2018/11/18/CN-AndroidIl2cppPatchReadMeFirst/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
   
     <nav id="page-nav">
       <a class="extend prev" rel="prev" href="/">&laquo; Prev</a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><a class="extend next" rel="next" href="/page/3/">Next &raquo;</a>
@@ -1334,7 +1260,7 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
           <ul class="article-tag-list" q-show="showTags">
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">server</a>
+                <a href="javascript:void(0)" class="js-tag color1">Unity iOS build</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1342,7 +1268,11 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">Unity iOS build</a>
+                <a href="javascript:void(0)" class="js-tag color2">server</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">Unity Plugin-nd</a>
               </li>
              
               <li class="article-tag-list-item">

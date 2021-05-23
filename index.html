@@ -130,6 +130,232 @@
           <div id="js-content" class="content-ll">
             
   
+    <article id="post-NavmeshMarker_README" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2021/05/23/NavmeshMarker_README/">NavimeshMarker_ExportWithoutBake_Readme</a>
+    </h1>
+  
+
+        
+        <a href="/2021/05/23/NavmeshMarker_README/" class="archive-article-date">
+  	<time datetime="2021-05-23T11:32:10.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-05-23</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><span id="1"></span></p>
+<h1 id="1-How-it-works"><a href="#1-How-it-works" class="headerlink" title="1. How it works"></a><a href="#1">1. How it works</a></h1><p>It is useful to bake meshes into a NavMesh file in Unity. As the project turns large, the meshes can be too complex to match a navigation area. And the longer I work with it, the stronger feelings I have would be if </p>
+<ul>
+<li>I can edit the navmesh freely within Unity. I have to select/un-select the existing mesh made by the artist, which is easy to make mistakes. If I want to mark certain areas, my jobs would probably depend on the artist. </li>
+<li>I have the open format runtime data so that I don’t have to re-bake it for my server. The re-baking workflow makes the server data different from the client’s, which brings in bugs.</li>
+</ul>
+<p>So I make NavimeshMarker. NavimeshMarker is a Unity Editor tool that aims to</p>
+<ul>
+<li>be a navmesh editor within Unity. The user can easily generate and edit meshes sticking to the ground. With the meshes, it is easy to mark a certain area as a specific Navigation Area, which can have different navigation costs. Then a smarter navigation path will be generated at the runtime and leads to a better AI interaction with different terrains.</li>
+<li>provide a bake-free runtime navmesh data with <a href="https://github.com/recastnavigation/recastnavigation" target="_blank" rel="noopener">Open Detour format</a>. </li>
+</ul>
+<p>After the meshes are generated, you can follow the old workflow to bake it to the navmesh data in the Unity Navigation Panel. And the navmesh data, instead of the meshes, is utilized at runtime eventually. And the meshes won’t be saved with the scene. Instead, they are saved as files in a directory besides the scene file. And it needn’t be packed into the game, which will save the memory at runtime.</p>
+<p>Or you can also export the navmesh without the baking workflow. The meshes intersection and the union calculation will be performed(The source code of this part is in secret.) during the exportation and the edge vertices are kept. Then the data will be saved in JSON format and transferred to the <a href="https://github.com/recastnavigation/recastnavigation" target="_blank" rel="noopener">Detour format</a>. An example is provided to show how to use these data in Unity. And it can be used anywhere as it is written in C++. The exporting and the runtime source are available via <a href="https://github.com/noodle1983/recastnavigation" target="_blank" rel="noopener">this link</a>(I only add new files and nothing changes are made to the original source, so it is easy to rebase.). In this workflow, you must pack the runtime data into the release package.</p>
+<p>As an editor tool, an editor window is made to manage the meshes’ data. The features are as followed.</p>
+<ul>
+<li>Editor Only Data Storage</li>
+<li>Edit A Markermesh<ul>
+<li>Freely Creation.</li>
+<li>Extension.</li>
+<li>Edge Vertices Adjustment.</li>
+<li>Connecting two edge points to form a new triangle.</li>
+<li>Triangle Deletion.</li>
+<li>Regular Poly Creation.</li>
+</ul>
+</li>
+<li>Handle Multiple Markermeshes<ul>
+<li>Merging</li>
+<li>Splitting</li>
+</ul>
+</li>
+<li>Detour Format Exportation.</li>
+<li>Runtime Usage Example.</li>
+</ul>
+<p>The details come as follows.</p>
+<p><span id="2"></span></p>
+<h1 id="2-Editor-Only-Data-Storage"><a href="#2-Editor-Only-Data-Storage" class="headerlink" title="2. Editor Only Data Storage"></a><a href="#2">2. Editor Only Data Storage</a></h1><p>As described above, the meshes data is saved in the same directory as the Unity scene file(*.unity), with the same name as the scene name and the fixed postfix <strong>.markermesh</strong>. </p>
+<figure><br>    <img src="Publish/Screenshots/SavedDir.png" alt="The Saved Directory Example"><br>    <br><font size="2" face="黑体">Fig.1. The Saved Directory Example</font><br></figure>
+
+<p>And the mesh files are named sequentially and stored in JSON format. For short, these mesh data are named <strong>markermesh</strong> below.</p>
+<figure><br>    <img src="Publish/Screenshots/SavedFiles.png" alt="The Saved Markermesh Data Example"><br>    <br><font size="2" face="黑体">Fig.2. The Saved Markermesh Data Example</font><br></figure>
+
+
+<p>When a scene is loaded, nothing is changed to the scene in the hierarchy until you open the NavimeshMarker Editor Window via <strong>Window -&gt; NavimeshMarkerWindow</strong>. Then, a gameobject named <strong>EditorOnly-WontSaved-MarkerMeshManager</strong> is added to the scene. The markermesh is loaded as sub-game objects with a MeshRenderer component attached to each of them, so the markermesh can be shown in the scene. The gameobject <strong>EditorOnly-WontSaved-MarkerMeshManager</strong> and the sub-objects are for editor only and won’t be saved in the scene. It means none of them will be included in the packed App. And it also means next time the scene is loaded in the editor, you have to open the NavimeshMarker Editor Window to show the markermesh in the Scene Window.</p>
+<figure><br>    <img src="Publish/Screenshots/Window.png" alt="The Navimesh Marker Window"><br>    <br><font size="2" face="黑体">Fig.3. The Navimesh Marker Window</font><br></figure>
+
+<p>In the NavimeshMarker Editor Window, there are 2 buttons named <strong>Reload From Files</strong> and <strong>Save To Files</strong>. Automatically, the data is loaded when the window is shown and is saved when you complete the editing jobs or the scene is saved. Still, these jobs can be done manually  via the 2 buttons. With another button named <strong>Import From Mesh Object…</strong>, a normal mesh can be imported from the asset or the scene. </p>
+<figure><br>    <img src="Publish/Screenshots/FilesButton.png" alt="The Serialization Buttons"><br>    <br><font size="2" face="黑体">Fig.4. The Serialization Buttons</font><br></figure>
+
+<p>The <strong>.markermesh</strong> files are in JSON format. And it is best to manage them with your revision control system(svn/git/…). Other than that, you don’t need to care about the storage too much, it has no impact on the scene data. </p>
+<p><span id="3"></span></p>
+<h1 id="3-Edit-A-Markermesh"><a href="#3-Edit-A-Markermesh" class="headerlink" title="3. Edit A Markermesh"></a><a href="#3">3. Edit A Markermesh</a></h1><p><span id="3.1"></span></p>
+<h2 id="3-1-Freely-Creation"><a href="#3-1-Freely-Creation" class="headerlink" title="3.1. Freely Creation"></a><a href="#3.1">3.1. Freely Creation</a></h2><figure><br>    <img src="Publish/Screenshots/CreateNewMarkermesh.png" alt="The Markermesh Creation Button"><br>    <br><font size="2" face="黑体">Fig.5. The Markermesh Creation Button</font><br></figure>
+
+<p>By clicking <strong>the Markermesh Creation button</strong>, as shown above, you will start to mark a new area. The steps are as follows.</p>
+<ul>
+<li>Along the edge of the area, click on the scene view, a point is generated in the scene. </li>
+<li>Click the next point on one side of the area’s edge, a new line is got.</li>
+<li>Click the other side of the area’s edge, a new triangle is got.</li>
+<li>Repeat the upper step.</li>
+<li>Click the <strong>stop drawing button</strong> or type <strong>Esc</strong> key to stop and save.</li>
+</ul>
+<figure><br>    <img src="Publish/Screenshots/StopDrawingButton.png" alt="The Stop Drawing Button"><br>    <br><font size="2" face="黑体">Fig.6. The Stop Drawing Button</font><br></figure>
+
+<p>And some tips come as follows.</p>
+<ul>
+<li>The mesh needn’t be completed at one time. It can be extendable later as in <a href="#3.3">Chapter 3.3</a>.</li>
+<li>The mesh needn’t be accurate this time. The edge vertices can be adjusted as in <a href="#3.4">Chapter 3.4</a>.</li>
+<li>The mesh’s vertices do stick to the terrain. But still, the mesh can be partly unshown as the terrain is not plain and covers the mesh.  </li>
+<li>Since nothing is filtered in the ray test, so the clicked point can be on a tree. It can be fixed by adjusting the edge point in the following chapter.</li>
+</ul>
+<p>Here comes the video demonstration.</p>
+<p>&emsp;&emsp;<br><a href="http://www.youtube.com/watch?v=q2NvcNwFvEA" title="Creating A Mesh" target="_blank" rel="noopener"><img src="http://img.youtube.com/vi/q2NvcNwFvEA/0.jpg" alt="To Create A Mesh"></a><br><br>&emsp;&emsp;<font size="2" face="黑体">Video 1. To Create A Mesh</font></p>
+<p><span id="3.2"></span></p>
+<h2 id="3-2-Regular-Poly-Creation"><a href="#3-2-Regular-Poly-Creation" class="headerlink" title="3.2. Regular Poly Creation"></a><a href="#3.2">3.2. Regular Poly Creation</a></h2><figure><br>    <img src="Publish/Screenshots/RegPolyCreation.png" alt="The Regular Poly Creation"><br>    <br><font size="2" face="黑体">Fig.7. The Regular Poly Creation</font><br></figure>
+
+<p>By clicking <strong>the Regular Poly Creation button</strong> as shown above, you will start to create a new regular poly marked as Unwalkable area.</p>
+<figure><br>    <img src="Publish/Screenshots/RegPolyCreationParam.png" alt="The Extension Button"><br>    <br><font size="2" face="黑体">Fig.8. The Regular Poly Creation Parameters</font><br></figure>
+
+<p>Once you clicked the button, the parameters are shown. You can adjust the edges, the radius, and the rotation on the Y-axis.</p>
+<p>Here comes the video demonstration.</p>
+<p>&emsp;&emsp;<br><a href="http://www.youtube.com/watch?v=xQd73ReBfTo" title="Creating A Regular Poly" target="_blank" rel="noopener"><img src="http://img.youtube.com/vi/xQd73ReBfTo/0.jpg" alt="To Create A Regular Poly"></a><br><br>&emsp;&emsp;<font size="2" face="黑体">Video 2. To Create A Regular Poly</font></p>
+<p><span id="3.3"></span></p>
+<h2 id="3-3-Extension"><a href="#3-3-Extension" class="headerlink" title="3.3. Extension"></a><a href="#3.3">3.3. Extension</a></h2><figure><br>    <img src="Publish/Screenshots/ExtendMesh.png" alt="The Extension Button"><br>    <br><font size="2" face="黑体">Fig.9. The Extension Button</font><br></figure>
+
+<p>By clicking <strong>the Extension button</strong> as shown above, or type <strong>key c</strong>, you will start to extend an existing mesh. </p>
+<ul>
+<li>After the click, the nearest line to the mouse pointer will be highlighted. </li>
+<li>Please select one with the left mouse button. </li>
+<li>Then extend it to a triangle by moving the point. </li>
+<li>And click the left button to confirm it.</li>
+<li>Then move the mouse pointer as in <a href="#3.1">Chapter 3.1</a>.</li>
+</ul>
+<p>Here comes the video demonstration.</p>
+<p>&emsp;&emsp;<br><a href="http://www.youtube.com/watch?v=XzVKreyZNhs" title="Continue Drawing" target="_blank" rel="noopener"><img src="http://img.youtube.com/vi/XzVKreyZNhs/0.jpg" alt="To Select An Edge Line To Continue"></a><br><br>&emsp;&emsp;<font size="2" face="黑体">Video 3. To Select An Edge Line To Continue</font></p>
+<p><span id="3.4"></span></p>
+<h2 id="3-4-Edge-Vertices-Adjustment"><a href="#3-4-Edge-Vertices-Adjustment" class="headerlink" title="3.4. Edge Vertices Adjustment"></a><a href="#3.4">3.4. Edge Vertices Adjustment</a></h2><figure><br>    <img src="Publish/Screenshots/AdjustPoint.png" alt="The Edge Vertices Adjustment Button"><br>    <br><font size="2" face="黑体">Fig.10. The Edge Vertices Adjustment Button</font><br></figure>
+
+<p>By clicking <strong>the Edge Vertices Adjustment button</strong> as shown above or type <strong>key v</strong>, you will start to adjust the edge vertices slightly. </p>
+<ul>
+<li>After the click, all the edge vertices are highlighted. </li>
+<li>To move a vertice, please press the left mouse button pick one, then drag it and release it.</li>
+<li>To add more edge vertices, please hold key CTRL and click on the edge line.</li>
+</ul>
+<p>Here comes the video demonstration.</p>
+<p>&emsp;&emsp;<br><a href="http://www.youtube.com/watch?v=lhzK9_jymi0" title="Adjusting Edge Vertices" target="_blank" rel="noopener"><img src="http://img.youtube.com/vi/lhzK9_jymi0/0.jpg" alt="To Adjust Edge Vertices Picture"></a><br><br>&emsp;&emsp;<font size="2" face="黑体">Video 4. To Adjust Edge Vertices’ Position</font></p>
+<p><span id="3.5"></span></p>
+<h2 id="3-5-Connect-two-edge-points-to-form-a-new-triangle"><a href="#3-5-Connect-two-edge-points-to-form-a-new-triangle" class="headerlink" title="3.5. Connect two edge points to form a new triangle."></a><a href="#3.5">3.5. Connect two edge points to form a new triangle.</a></h2><figure><br>    <img src="Publish/Screenshots/ConnectPoint.png" alt="The Connecting Edge Vertices Button"><br>    <br><font size="2" face="黑体">Fig.11. The Connecting Edge Vertices Button</font><br></figure>
+
+<p>By clicking the <strong>Connecting Edge Vertices</strong> button as shown above, or type <strong>key z</strong>, you will start to connect two edge points of the highlighted mesh data. </p>
+<ul>
+<li>After the click, all the edge vertices are highlighted. </li>
+<li>To make a new line, please select one vertice and then the other. The line is only kept in the memory(can’t be saved) until it forms a triangle with the existing lines. </li>
+</ul>
+<p>&emsp;&emsp;<br><a href="http://www.youtube.com/watch?v=WtDO3sQOdjw" title="Connect Mesh Pieces" target="_blank" rel="noopener"><img src="http://img.youtube.com/vi/WtDO3sQOdjw/0.jpg" alt="To Connect Mesh Pieces Picture Picture"></a><br><br>&emsp;&emsp;<font size="2" face="黑体">Video 5. To Connect Edge Vertices</font></p>
+<p><span id="3.6"></span></p>
+<h2 id="3-6-Triangle-Deletion"><a href="#3-6-Triangle-Deletion" class="headerlink" title="3.6. Triangle Deletion"></a><a href="#3.6">3.6. Triangle Deletion</a></h2><figure><br>    <img src="Publish/Screenshots/DeleteTriangle.png" alt="The Triangle Deletion Button"><br>    <br><font size="2" face="黑体">Fig.12. The Triangle Deletion Button</font><br></figure>
+
+<p>By clicking <strong>the Triangle Deletion button</strong> as shown above, or type <strong>key x</strong>, you will start to delete an existing triangle. </p>
+<ul>
+<li>As the mouse moves, the pointed triangle is highlighted. </li>
+<li>Please type key d to delete it.</li>
+</ul>
+<p>&emsp;&emsp;<br><a href="http://www.youtube.com/watch?v=vuIC3ZbkHqY" title="Delete Triangles" target="_blank" rel="noopener"><img src="http://img.youtube.com/vi/vuIC3ZbkHqY/0.jpg" alt="To Delete Triangles Picture"></a><br><br>&emsp;&emsp;<font size="2" face="黑体">Video 6. To Delete Triangles</font></p>
+<p><span id="4"></span></p>
+<h1 id="4-Handle-Multiple-Markermeshes"><a href="#4-Handle-Multiple-Markermeshes" class="headerlink" title="4. Handle Multiple Markermeshes"></a><a href="#4">4. Handle Multiple Markermeshes</a></h1><p><span id="4.1"></span></p>
+<h2 id="4-1-Merging"><a href="#4-1-Merging" class="headerlink" title="4.1. Merging"></a><a href="#4.1">4.1. Merging</a></h2><figure><br>    <img src="Publish/Screenshots/MergeSplitMesh.png" alt="The Merging and Splitting Buttons"><br>    <br><font size="2" face="黑体">Fig.13. The Merging and Splitting Buttons</font><br></figure>
+
+<p>By clicking the merge button, the markermesh will be merged to its upper/lower.<br>If the 2 markermeshes are not next to each other, please move them with the move button described in <a href="#4.2">Chapter 4.2</a>.</p>
+<p><span id="4.2"></span></p>
+<h2 id="4-2-Splitting"><a href="#4-2-Splitting" class="headerlink" title="4.2. Splitting"></a><a href="#4.2">4.2. Splitting</a></h2><figure><br>    <img src="Publish/Screenshots/MoveMesh.png" alt="The Movement Buttons"><br>    <br><font size="2" face="黑体">Fig.14. The Movement Buttons</font><br></figure>
+
+<p>By clicking the split mesh data button, the markermesh will be split into several not connecting pieces.<br>If all the vertices of the mesh triangles are connected, nothing will happen.</p>
+<p><span id="4.3"></span></p>
+<h2 id="4-3-video-demonstration"><a href="#4-3-video-demonstration" class="headerlink" title="4.3. video demonstration"></a><a href="#4.3">4.3. video demonstration</a></h2><p>&emsp;&emsp;<br><a href="http://www.youtube.com/watch?v=bYXqzL_9Ymg" title="Merging and Split Mesh(es)" target="_blank" rel="noopener"><img src="http://img.youtube.com/vi/bYXqzL_9Ymg/0.jpg" alt="To Merge and Split Meshes"></a><br><br>&emsp;&emsp;<font size="2" face="黑体">Video 7. To Merge and Split Meshes</font></p>
+<p><span id="5"></span></p>
+<h1 id="5-Detour-Format-Exportation"><a href="#5-Detour-Format-Exportation" class="headerlink" title="5. Detour Format Exportation."></a><a href="#5">5. Detour Format Exportation.</a></h1><figure><br>    <img src="Publish/Screenshots/ExportBtn.png" alt="The Movement Buttons"><br>    <br><font size="2" face="黑体">Fig.15. The Movement Buttons</font><br></figure><br>By clicking the Export Detour Mesh button, the markermesh gets clipped by its uppers(difference set) and merged.<br><br><figure><br>    <img src="Publish/Screenshots/ExportDetourMesh.png" alt="The Movement Buttons"><br>    <br><font size="2" face="黑体">Fig.16. The Movement Buttons</font><br></figure><br>After the exportation is done, the final mesh is generated. You can click on its area to highlight it in the scene view. The file is in JSON format.<br><br><br>Here comes the video demonstration.<br><br>&emsp;&emsp;<br><a href="http://www.youtube.com/watch?v=x5vYUpBxwgQ" title="Export Detour Mesh" target="_blank" rel="noopener"><img src="http://img.youtube.com/vi/x5vYUpBxwgQ/0.jpg" alt="To Export Detour Mesh"></a><br><br>&emsp;&emsp;<font size="2" face="黑体">Video 8. To Export Detour Mesh</font><br><br><span id="6"></span><br># <a href="#6">6. Runtime Usage Example</a><br>After the exportation is completed, the detour runtime file is generated from the final mesh too.<br>The examples will show how to use the detour format data.<br><br><span id="6.1"></span><br># <a href="#6.1">6.1. Runtime File</a><br><br><figure><br>    <img src="Publish/Screenshots/RuntimeFile.png" alt="The Movement Buttons"><br>    <br><font size="2" face="黑体">Fig.17. The Movement Buttons</font><br></figure><br>The runtime file is in Detour format. You need to pack it to the release version if you want to use this runtime data instead of the baked one.<br><br><span id="6.2"></span><br># <a href="#6.2">6.2. Runtime Query Params</a><br><figure><br>    <img src="Publish/Screenshots/RuntimeParams.png" alt="The Movement Buttons"><br>    <br><font size="2" face="黑体">Fig.18. The Movement Buttons</font><br></figure>
+
+<p>You can adjust the parameters as above during the test. Please refer to the <a href="https://github.com/recastnavigation/recastnavigation" target="_blank" rel="noopener">Recast Doc</a> for the usages of the parameters.</p>
+<p><span id="6.3"></span></p>
+<h1 id="6-3-Runtime-Query-Example"><a href="#6-3-Runtime-Query-Example" class="headerlink" title="6.3. Runtime Query Example"></a><a href="#6.3">6.3. Runtime Query Example</a></h1><figure><br>    <img src="Publish/Screenshots/RuntimeExample.png" alt="The Movement Buttons"><br>    <br><font size="2" face="黑体">Fig.19. The Movement Buttons</font><br></figure>
+
+<p>There are 3 examples, which are <em>find path</em>, <em>find direct path</em>, and <em>raycast</em>. The <em>find path</em> will show the path from the start point to the endpoint. It may contain some mid-points which look not so straight. So the <em>find direct path</em> does more calculation basing on the <em>find path</em> to make it look more straight. Please refer to the video for how to set the start point and the endpoint.</p>
+<p>&emsp;&emsp;<br><a href="http://www.youtube.com/watch?v=2ScerXO8aI4" title="Runtime Query Example" target="_blank" rel="noopener"><img src="http://img.youtube.com/vi/2ScerXO8aI4/0.jpg" alt="Runtime Query Example"></a><br><br>&emsp;&emsp;<font size="2" face="黑体">Video 9. Runtime Query Example</font></p>
+<p><span id="7"></span></p>
+<h1 id="7-Others"><a href="#7-Others" class="headerlink" title="7. Others"></a><a href="#7">7. Others</a></h1><ul>
+<li>The navigation cost of each area needs to be set at runtime.<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">//For the bake workflow</span><br><span class="line">         NavMesh.SetAreaCost((int)NavMeshType.Road, 1);</span><br><span class="line">         NavMesh.SetAreaCost((int)NavMeshType.Walkable, 10);</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">auto navmesh = NativeNavmeshWrapper.NewInstance(detourBinPath);</span><br><span class="line">...</span><br><span class="line"></span><br><span class="line">//For the bake-free workflow		</span><br><span class="line">         navmesh.SetAreaCost((int)NavMeshType.Road, 1);</span><br><span class="line">         navmesh.SetAreaCost((int)NavMeshType.Walkable, 10);</span><br></pre></td></tr></table></figure>
+<p><span id="8"></span></p>
+<h1 id="8-Support-amp-Contact-amp-When-you-think-of-it-is-better-if…-amp-Consultation"><a href="#8-Support-amp-Contact-amp-When-you-think-of-it-is-better-if…-amp-Consultation" class="headerlink" title="8. Support &amp; Contact &amp; When you think of it is better if… &amp; Consultation"></a><a href="#8">8. Support &amp; Contact &amp; When you think of it is better if… &amp; Consultation</a></h1><ul>
+<li>email: <a href="mailto:noodle1983@126.com" target="_blank" rel="noopener">noodle1983@126.com</a></li>
+</ul>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">Unity Plugin-nd</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2021/05/23/NavmeshMarker_README/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-putty-nd7.9" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
@@ -970,138 +1196,6 @@ server->>client: FIN</pre>
 
 
   
-    <article id="post-framework-nd_Makefile" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2019/01/04/framework-nd_Makefile/">framework-nd之强迫症的Makefile</a>
-    </h1>
-  
-
-        
-        <a href="/2019/01/04/framework-nd_Makefile/" class="archive-article-date">
-  	<time datetime="2019-01-04T08:00:10.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-01-04</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h1 id="1-设计思路"><a href="#1-设计思路" class="headerlink" title="1. 设计思路"></a>1. 设计思路</h1><p>经历的项目里，见过有用autoconf的，但是私有的server，部署环境是确定的，大多都是直接用Makefile。</p>
-<p>为什么说是强迫症的呢？主要是最初有这么几个想法：</p>
-<ul>
-<li>见到的其他所有Makefile，.o文件和.c/.cpp文件是放在一起的，觉得不美观，想仿VS，放在另外一个文件夹里，如.lib。和VS不同的是，笔者还想在这个目录下建立和源代码一样的目录体系，.o文件放在各自的目录下。这样有什么好处呢，不同的目录相当于不同的命名空间，如果没有目录结构，这部分信息就丢了。如我们的miniserver在不同的目录下，有两个相同名字的misc.cpp，内容是不一样的（一个有用，一个是废的），其Editor的版本是用VS编译的，因为VS是没有保留目录信息的，后编译的文件会覆盖前一个，就造成了一个诡异的结果，有时是ok的，有时链接符号未定义…这个bug让人好找</li>
-<li>Makefile支持include的语法，另一个想法是将它做成插件化，各层的Makefile只要include了之后，对几个变量进行赋值就ok了（Android的Makefile也是这么干的）。</li>
-<li>增量编译</li>
-</ul>
-<p>这个Makefile框架后来用于游戏项目，另外加了</p>
-<ul>
-<li>Debug版本的所有输出文件名加上”_d”，Release版本的所有输出文件加上”_r”，这样将Debug版和Release版的输出隔开，避免链接串文件。</li>
-</ul>
-<p>对项目文件的管理，设想是一个顶层目录一个库（如前文的线程组一个目录，网络库一个目录，逻辑层的FSM一个目录…），先编译成静态库或者动态库（动态库问题比较多，我们最后都用静态库了）;每个库带一个UnitTest目录，一边写一边测，最后这个UnitTest就被当成执行文件了。</p>
-<h1 id="2-实现"><a href="#2-实现" class="headerlink" title="2. 实现"></a>2. 实现</h1><p>先看一个目录的例子。</p>
-<h1 id="2-1-一个应用的例子"><a href="#2-1-一个应用的例子" class="headerlink" title="2.1. 一个应用的例子"></a>2.1. 一个应用的例子</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><span class="line">#########################################</span><br><span class="line">#                top dir                #</span><br><span class="line">#########################################</span><br><span class="line">PROJBASE=$(CURDIR)/../../</span><br><span class="line"></span><br><span class="line">#########################################</span><br><span class="line">#                target                 #</span><br><span class="line">#########################################</span><br><span class="line">PRE_CMD=echo &apos;pre compile cmd&apos;</span><br><span class="line">POST_CMD=echo &apos;post compile cmd on success&apos;</span><br><span class="line">SUBDIR= .</span><br><span class="line">EXCEPT_FILES=  %test.cpp </span><br><span class="line"></span><br><span class="line">#########################################</span><br><span class="line">#      header and lib dependancy        #</span><br><span class="line">#########################################</span><br><span class="line">INC_DIR= -I.  \</span><br><span class="line">	-I/usr/include/mysql \</span><br><span class="line">	-I$(PROJBASE)/lib/include \</span><br><span class="line"></span><br><span class="line">DEBUG_STATIC_LIB= \</span><br><span class="line">	$(PROJBASE)/lib/libmysqlclient_r.a \</span><br><span class="line">	$(PROJBASE)/lib/libcommon$(BUILD_SUFFIX).a \</span><br><span class="line">	$(PROJBASE)/lib/libffluajit.a \</span><br><span class="line">	$(PROJBASE)/lib/libtcmalloc_debug.a \</span><br><span class="line">	$(PROJBASE)/lib/libprofiler.a \</span><br><span class="line">	$(PROJBASE)/lib/libunwind.a \</span><br><span class="line">	$(PROJBASE)/lib/libcurl.a \</span><br><span class="line">	$(PROJBASE)/lib/libssl.a \</span><br><span class="line">	$(PROJBASE)/lib/libcrypto.a\</span><br><span class="line">	$(PROJBASE)/lib/libz.a\</span><br><span class="line">	$(PROJBASE)/lib/libcares.a\</span><br><span class="line"></span><br><span class="line">RELEASE_STATIC_LIB= \</span><br><span class="line">	$(PROJBASE)/lib/libmysqlclient_r.a \</span><br><span class="line">	$(PROJBASE)/lib/libcommon$(BUILD_SUFFIX).a \</span><br><span class="line">	$(PROJBASE)/lib/libffluajit.a \</span><br><span class="line">	$(PROJBASE)/lib/libtcmalloc.a \</span><br><span class="line">	$(PROJBASE)/lib/libprofiler.a \</span><br><span class="line">	$(PROJBASE)/lib/libunwind.a \</span><br><span class="line">	$(PROJBASE)/lib/libcurl.a \</span><br><span class="line">	$(PROJBASE)/lib/libssl.a \</span><br><span class="line">	$(PROJBASE)/lib/libcrypto.a\</span><br><span class="line">	$(PROJBASE)/lib/libz.a\</span><br><span class="line">	$(PROJBASE)/lib/libcares.a\</span><br><span class="line"></span><br><span class="line">SHARED_LIB_DIR=</span><br><span class="line">DEBUG_SHARED_LIB= -pthread -ldl -lrt</span><br><span class="line">RELEASE_SHARED_LIB= -pthread -ldl -lrt</span><br><span class="line"></span><br><span class="line">#########################################</span><br><span class="line">#              compiler                 #</span><br><span class="line">#########################################</span><br><span class="line">include $(PROJBASE)/build/makefile.compiler.gcc</span><br><span class="line"></span><br><span class="line">#########################################</span><br><span class="line">#              rules                    #</span><br><span class="line">#########################################</span><br><span class="line">include $(PROJBASE)/build/makefile.compile.rules</span><br></pre></td></tr></table></figure>
-<ul>
-<li>PROJBASE即工程根目录。.lib目录就在根目录下。</li>
-<li>PRE_CMD/POST_CMD 分别是编译前和编译后执行的命令。</li>
-<li>SUBDIR 是当前目录下的源文件目录，可包含多个，自动编译.c/.cpp</li>
-<li>EXCEPT_FILES 是不需要编译的文件列表</li>
-<li>INC_DIR 头文件查找路径</li>
-<li>DEBUG_STATIC_LIB/RELEASE_STATIC_LIB 分别是依赖的debug和release版本的静态库。</li>
-<li>SHARED_LIB_DIR 是动态库查找路径</li>
-<li>DEBUG_SHARED_LIB/RELEASE_SHARED_LIB 分别是依赖的debug和release版的动态库。</li>
-<li>makefile.compiler.gcc定义编译器，代码如下，我们warning当error处理，同时忽略了部分warning，-Wl,–eh-frame-hdr是tcmalloc的建议，其他没太多东西，备查。</li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">CC=g++</span><br><span class="line">cc=gcc</span><br><span class="line">AR=ar</span><br><span class="line">RANLIB=ranlib</span><br><span class="line">ARFLAGS=rcs</span><br><span class="line">SHAREDFLAG= -fPIC -shared</span><br><span class="line">DEBUG_FLAGS=-g -DDEBUG -D_FILE_OFFSET_BITS=64</span><br><span class="line">RELEASE_FLAGS=-g -O3 -D_FILE_OFFSET_BITS=64</span><br><span class="line">CFLAGs=-Wall -Werror -fno-strict-aliasing -Wno-deprecated-declarations -Wno-array-bounds $(INC_DIR)</span><br><span class="line">CXXFLAGS=-Wall -Werror -fno-strict-aliasing -Wno-deprecated-declarations -Wno-array-bounds $(INC_DIR) </span><br><span class="line">LDFLAGS=-Wl,--eh-frame-hdr $(SHARED_LIB_DIR) $(STATIC_LIB) $(SHARED_LIB) </span><br><span class="line">DEBUG_DIRNAME=Debug</span><br><span class="line">RELEASE_DIRNAME=Release</span><br><span class="line">DEBUG_SUFFIX=_d</span><br><span class="line">RELEASE_SUFFIX=_r</span><br></pre></td></tr></table></figure>
-<ul>
-<li>makefile.compile.rules 即本文所要讲的工具了。</li>
-</ul>
-<p>OK，设计思想就这样，定义变量，其他交给makefile.compile.rules，如下。</p>
-<h1 id="2-2-定义输出"><a href="#2-2-定义输出" class="headerlink" title="2.2. 定义输出"></a>2.2. 定义输出</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">#########################################</span><br><span class="line">#          OUT DIR                      #</span><br><span class="line">#########################################</span><br><span class="line">DIR_LIST=$(subst /, \ , $(CURDIR))</span><br><span class="line">MOD_NAME=$(word $(words $(DIR_LIST)), $(DIR_LIST))</span><br><span class="line"></span><br><span class="line">DEBUG_BIN_TARGET=$(if $(APPDIR), $(MOD_NAME)$(DEBUG_SUFFIX))</span><br><span class="line">DEBUG_SHARED_TARGET=$(if $(COMPILE_SHARED),lib$(MOD_NAME)$(DEBUG_SUFFIX).so)</span><br><span class="line">DEBUG_STATIC_TARGET=lib$(MOD_NAME)$(DEBUG_SUFFIX).a</span><br><span class="line">DEBUG_TARGET = $(DEBUG_BIN_TARGET) $(DEBUG_SHARED_TARGET) $(DEBUG_STATIC_TARGET)</span><br><span class="line"></span><br><span class="line">RELEASE_BIN_TARGET=$(if $(APPDIR), $(MOD_NAME)$(RELEASE_SUFFIX))</span><br><span class="line">RELEASE_SHARED_TARGET=$(if $(COMPILE_SHARED),lib$(MOD_NAME)$(RELEASE_SUFFIX).so)</span><br><span class="line">RELEASE_STATIC_TARGET=lib$(MOD_NAME)$(RELEASE_SUFFIX).a</span><br><span class="line">RELEASE_TARGET = $(RELEASE_BIN_TARGET) $(RELEASE_SHARED_TARGET) $(RELEASE_STATIC_TARGET)</span><br><span class="line"></span><br><span class="line">OUTDIR_PREFIX=$(PROJBASE)/.lib</span><br><span class="line">OUTDIR=$(OUTDIR_PREFIX)/$(MOD_NAME)</span><br><span class="line">#ALL_TARGET = $(addprefix $(OUTDIR_PREFIX)/, $(TARGET))</span><br><span class="line"></span><br><span class="line">DEBUG_DIR=$(PROJBASE)/$(DEBUG_DIRNAME)</span><br><span class="line">RELEASE_DIR=$(PROJBASE)/$(RELEASE_DIRNAME)</span><br><span class="line">MOD_DEBUG_OUTDIR=$(DEBUG_DIR)/$(MOD_NAME)</span><br><span class="line">MOD_RELEASE_OUTDIR=$(RELEASE_DIR)/$(MOD_NAME)</span><br></pre></td></tr></table></figure>
-<ul>
-<li>MOD_NAME即最后一层目录</li>
-<li>DEBUG_SUFFIX/RELEASE_SUFFIX 是前面说的”_d”/“_r”后缀</li>
-<li>然后定义了输出的静态库</li>
-<li>OUTDIR是本模块的输出目录，”.lib”下的目录</li>
-<li>后面DEBUG_DIR/RELEASE_DIR是最后正式release的文件，不包含.o文件</li>
-<li>MOD_DEBUG_OUTDIR/MOD_RELEASE_OUTDIR是本模块的release文件。</li>
-</ul>
-<h1 id="2-2-定义临时输出文件（-o文件"><a href="#2-2-定义临时输出文件（-o文件" class="headerlink" title="2.2. 定义临时输出文件（.o文件)"></a>2.2. 定义临时输出文件（.o文件)</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">#########################################</span><br><span class="line">#               OBJECTS                 #</span><br><span class="line">#########################################</span><br><span class="line">CFILES=$(filter-out $(EXCEPT_FILES), \</span><br><span class="line">	$(foreach DIR, $(SUBDIR), $(wildcard $(DIR)/*.c)) )</span><br><span class="line">CPPFILES=$(filter-out $(EXCEPT_FILES), \</span><br><span class="line">	$(foreach DIR, $(SUBDIR), $(wildcard $(DIR)/*.cpp)) \</span><br><span class="line">        $(TOLUACPP) )</span><br><span class="line">CCFILES=$(filter-out $(EXCEPT_FILES), \</span><br><span class="line">	$(foreach DIR, $(SUBDIR), $(wildcard $(DIR)/*.cc)) )</span><br><span class="line">TMP_OBJECTS=$(patsubst %.cpp, %.o, $(CPPFILES)) \</span><br><span class="line">	$(patsubst %.cc, %.o, $(CCFILES)) \</span><br><span class="line">           $(patsubst %.c, %.o, $(CFILES)) </span><br><span class="line">OUTSUBDIR=$(addprefix $(OUTDIR)/, $(SUBDIR) \</span><br><span class="line">    $(if $(TOLUACPP), LuaObject))</span><br><span class="line">    </span><br><span class="line">TMP_PATH_OBJECTS=$(addprefix $(OUTDIR)/, $(TMP_OBJECTS))</span><br><span class="line">DEBUG_OBJECTS=$(patsubst %.o, %$(DEBUG_SUFFIX).o, $(TMP_PATH_OBJECTS))</span><br><span class="line">RELEASE_OBJECTS=$(patsubst %.o, %$(RELEASE_SUFFIX).o, $(TMP_PATH_OBJECTS))</span><br></pre></td></tr></table></figure>
-<ul>
-<li>CFILES/CPPFILES/CCFILES 是所有源代码文件的相对路径</li>
-<li>TMP_OBJECTS 是所有.o文件的相对路径</li>
-<li>OUTSUBDIR 是需要新建的.lib目录文件</li>
-<li>TMP_PATH_OBJECTS 是所有.o文件的绝对路径</li>
-<li>DEBUG_OBJECTS/RELEASE_OBJECTS 是给.o文件加上”_d”/“_r”后缀</li>
-</ul>
-<h1 id="2-3-UnitTest的相关文件"><a href="#2-3-UnitTest的相关文件" class="headerlink" title="2.3. UnitTest的相关文件"></a>2.3. UnitTest的相关文件</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">#########################################</span><br><span class="line">#        Test    Target                 #</span><br><span class="line">#########################################</span><br><span class="line">TEST_DIR=UnitTest</span><br><span class="line">TEST_CPP_FILES=$(foreach DIR, $(TEST_DIR), $(wildcard $(DIR)/*.cpp))</span><br><span class="line">TEST_OUT_SUBDIR=$(addprefix $(OUTDIR)/, $(TEST_DIR))</span><br><span class="line"></span><br><span class="line">DEBUG_TMP_TEST_OBJECTS=$(patsubst %.cpp, %$(DEBUG_SUFFIX).o, $(TEST_CPP_FILES))</span><br><span class="line">DEBUG_TEST_OBJECTS=$(addprefix $(OUTDIR)/, $(DEBUG_TMP_TEST_OBJECTS))</span><br><span class="line">DEBUG_TEST_TARGET=$(basename $(notdir $(DEBUG_TEST_OBJECTS)))</span><br><span class="line"></span><br><span class="line">RELEASE_TMP_TEST_OBJECTS=$(patsubst %.cpp, %$(RELEASE_SUFFIX).o, $(TEST_CPP_FILES))</span><br><span class="line">RELEASE_TEST_OBJECTS=$(addprefix $(OUTDIR)/, $(RELEASE_TMP_TEST_OBJECTS))</span><br><span class="line">RELEASE_TEST_TARGET=$(basename $(notdir $(RELEASE_TEST_OBJECTS)))</span><br><span class="line"></span><br><span class="line">TEST_OUTDIR=$(OUTDIR_PREFIX)/test</span><br><span class="line">TEST_FILE=$(foreach DIR, $(TEST_DIR), $(wildcard $(DIR)/*.lua) \</span><br><span class="line">                                     $(wildcard $(DIR)/*.xml) \</span><br><span class="line">                                     $(wildcard $(DIR)/*.pcap))</span><br><span class="line">TEST_OUT_FILE=$(addprefix $(TEST_OUTDIR)/, $(notdir $(TEST_FILE)))</span><br></pre></td></tr></table></figure>
-<p>和前面类似</p>
-<h1 id="2-4-定义增量编译所需要的依赖文件"><a href="#2-4-定义增量编译所需要的依赖文件" class="headerlink" title="2.4. 定义增量编译所需要的依赖文件"></a>2.4. 定义增量编译所需要的依赖文件</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">#########################################</span><br><span class="line">#               Depend                  #</span><br><span class="line">#########################################</span><br><span class="line">DEPENDFILES=$(patsubst %.o, %.d, $(TMP_PATH_OBJECTS))</span><br><span class="line">DEPENDTARGET=$(patsubst %.d, %.d.tmp, $(DEPENDFILES))</span><br><span class="line">TESTDEPENDFILES=$(patsubst %.o, %.d, $(TEST_OBJECTS))</span><br><span class="line">TESTDEPENDTARGET=$(patsubst %.d, %.d.tmp, $(TESTDEPENDFILES))</span><br></pre></td></tr></table></figure>
-<p>我们会在.d文件里临时存放.cpp所依赖的头文件</p>
-<h1 id="2-5-顶层规则"><a href="#2-5-顶层规则" class="headerlink" title="2.5. 顶层规则"></a>2.5. 顶层规则</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">test: CFLAGS+=$(DEBUG_FLAGS)</span><br><span class="line">test: CXXFLAGS+=$(DEBUG_FLAGS)</span><br><span class="line">test: MOD_OUTDIR=$(MOD_DEBUG_OUTDIR)</span><br><span class="line">test: DEST_OUTDIR=$(DEBUG_DIR)</span><br><span class="line">test: SHARED_LIB+=$(DEBUG_SHARED_LIB)</span><br><span class="line">test: STATIC_LIB+=$(DEBUG_STATIC_LIB)</span><br><span class="line">test: BUILD_SUFFIX=$(DEBUG_SUFFIX)</span><br><span class="line">test: prepare $(DEBUG_TEST_TARGET)</span><br><span class="line">	@if [ &quot;&quot; != &quot;$(POST_CMD)&quot; ]; then \</span><br><span class="line">		$(POST_CMD); \</span><br><span class="line">	fi;</span><br><span class="line"></span><br><span class="line">rtest: CFLAGS+=$(RELEASE_FLAGS)</span><br><span class="line">rtest: CXXFLAGS+=$(RELEASE_FLAGS)</span><br><span class="line">rtest: MOD_OUTDIR=$(MOD_RELEASE_OUTDIR)</span><br><span class="line">rtest: DEST_OUTDIR=$(RELEASE_DIR)</span><br><span class="line">rtest: SHARED_LIB+=$(RELEASE_SHARED_LIB)</span><br><span class="line">rtest: STATIC_LIB+=$(RELEASE_STATIC_LIB)</span><br><span class="line">rtest: BUILD_SUFFIX=$(RELEASE_SUFFIX)</span><br><span class="line">rtest: prepare  $(RELEASE_TEST_TARGET)</span><br><span class="line">	@if [ &quot;&quot; != &quot;$(POST_CMD)&quot; ]; then \</span><br><span class="line">		$(POST_CMD); \</span><br><span class="line">	fi;</span><br><span class="line"></span><br><span class="line">prepare:</span><br><span class="line">	@if [ &quot;&quot; != &quot;$(PRE_CMD)&quot; ]; then \</span><br><span class="line">		$(PRE_CMD); \</span><br><span class="line">	fi;</span><br></pre></td></tr></table></figure>
-<p>不同的target应用不同的变量，执行pre/post相关操作。debug版本是make test，release版本是make rtest。</p>
-<h1 id="2-6-下层规则"><a href="#2-6-下层规则" class="headerlink" title="2.6. 下层规则"></a>2.6. 下层规则</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$(DEBUG_TEST_TARGET): $(MOD_OUTDIR) $(AUTOTARGET) $(DEBUG_TARGET) testdepend $(TEST_OUT_SUBDIR) $(DEBUG_TEST_OBJECTS) $(TEST_OUTDIR) $(TEST_OUT_FILE) $(SYMBOL_OUTDIR) deploy_common</span><br><span class="line">	$(call build_test_exe,$@, $(DEBUG_OBJECTS)) # no blank before $@</span><br><span class="line"></span><br><span class="line">$(RELEASE_TEST_TARGET): $(MOD_OUTDIR) $(AUTOTARGET) $(RELEASE_TARGET) testdepend $(TEST_OUT_SUBDIR) $(RELEASE_TEST_OBJECTS) $(TEST_OUTDIR) $(TEST_OUT_FILE) $(SYMBOL_OUTDIR) deploy_common</span><br><span class="line">	$(call build_test_exe,$@, $(RELEASE_OBJECTS)) # no blank before $@</span><br></pre></td></tr></table></figure>
-<h1 id="2-6-1-新建各种目录"><a href="#2-6-1-新建各种目录" class="headerlink" title="2.6.1. 新建各种目录"></a>2.6.1. 新建各种目录</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">$(MOD_OUTDIR):</span><br><span class="line">	@if [ ! -d $@ ]; then mkdir -p $@; fi;</span><br><span class="line"></span><br><span class="line">$(DEBUG_DIR):</span><br><span class="line">	@if [ ! -d $@ ]; then mkdir -p $@; fi;</span><br><span class="line"></span><br><span class="line">$(RELEASE_DIR):</span><br><span class="line">	@if [ ! -d $@ ]; then mkdir -p $@; fi;</span><br><span class="line"></span><br><span class="line">$(MOD_DEBUG_OUTDIR):$(DEBUG_DIR)</span><br><span class="line">	@if [ ! -d $@ ]; then mkdir -p $@; fi;</span><br><span class="line"></span><br><span class="line">$(MOD_RELEASE_OUTDIR): $(RELEASE_DIR)</span><br><span class="line">	@if [ ! -d $@ ]; then mkdir -p $@; fi;</span><br><span class="line"></span><br><span class="line">$(OUTDIR):$(OUTDIR_PREFIX)</span><br><span class="line">	@if [ ! -d $@ ]; then mkdir -p $@; fi;</span><br><span class="line"></span><br><span class="line">$(OUTDIR_PREFIX):</span><br><span class="line">	@if [ ! -d $@ ]; then mkdir -p $@; fi;</span><br><span class="line"></span><br><span class="line">$(TEST_OUTDIR):</span><br><span class="line">	@if [ ! -d $@ ]; then mkdir -p $@; fi;</span><br><span class="line"></span><br><span class="line">$(TEST_OUT_SUBDIR):</span><br><span class="line">	@if [ ! -d $@ ]; then mkdir -p $@; fi;</span><br><span class="line"></span><br><span class="line">$(OUTSUBDIR):</span><br><span class="line">	@if [ ! -d $@ ]; then mkdir -p $@; fi;</span><br><span class="line"></span><br><span class="line">$(SYMBOL_OUTDIR):$(OUTDIR_PREFIX)</span><br><span class="line">	@if [ ! -d $@ ]; then mkdir -p $@; fi;</span><br></pre></td></tr></table></figure>
-<h1 id="2-6-2-增量编译-o"><a href="#2-6-2-增量编译-o" class="headerlink" title="2.6.2. 增量编译.o"></a>2.6.2. 增量编译.o</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">-include $(DEPENDFILES) $(TESTDEPENDFILES)</span><br><span class="line">$(OUTDIR)/%.d.tmp:%.cc</span><br><span class="line">	@echo &quot;building dependancy for $&lt;...&quot;</span><br><span class="line">	@set -e; rm -f $@ $(OUTDIR)/$*.d; \</span><br><span class="line">	($(CC) $(CXXFLAGS) -MM -c $&lt; &gt; $@ || rm -f $@) &amp;&amp;  \</span><br><span class="line">	sed &apos;s,\(.*\)\.o[ :]*,$(OUTDIR)/$*.o $@: ,g&apos; &lt;$@ &gt;$(OUTDIR)/$*.d; </span><br><span class="line"></span><br><span class="line">$(OUTDIR)/%.d.tmp:%.cpp</span><br><span class="line">	@echo &quot;building dependancy for $&lt;...&quot;</span><br><span class="line">	@set -e; rm -f $@ $(OUTDIR)/$*.d; \</span><br><span class="line">	($(CC) $(CXXFLAGS) -MM -c $&lt; &gt; $@ || rm -f $@) &amp;&amp;  \</span><br><span class="line">	sed &apos;s,\(.*\)\.o[ :]*,$(OUTDIR)/$*.o $@: ,g&apos; &lt;$@ &gt;$(OUTDIR)/$*.d; </span><br><span class="line"></span><br><span class="line">$(OUTDIR)/%.d.tmp:%.c</span><br><span class="line">	@echo &quot;building dependancy for $&lt;...&quot;</span><br><span class="line">	@set -e; rm -f $@ $(OUTDIR)/$*.d; \</span><br><span class="line">	($(cc) $(CXXFLAGS) -MM -c $&lt; &gt; $@ || rm -f $@) &amp;&amp;  \</span><br><span class="line">	sed &apos;s,\(.*\)\.o[ :]*,$(OUTDIR)/$*.o $@: ,g&apos; &lt;$@ &gt;$(OUTDIR)/$*.d; </span><br><span class="line"></span><br><span class="line">$(OUTDIR)/%$(DEBUG_SUFFIX).o:%.cc $(OUTDIR)/%.d.tmp </span><br><span class="line">	$(CC) $(CXXFLAGS) -c $&lt; -o $@</span><br><span class="line"></span><br><span class="line">$(OUTDIR)/%$(DEBUG_SUFFIX).o:%.cpp $(OUTDIR)/%.d.tmp</span><br><span class="line">	$(CC) $(CXXFLAGS) -c $&lt; -o $@</span><br><span class="line"></span><br><span class="line">$(OUTDIR)/%$(DEBUG_SUFFIX).o:%.c $(OUTDIR)/%.d.tmp</span><br><span class="line">	$(cc) $(CXXFLAGS) -c $&lt; -o $@</span><br><span class="line"></span><br><span class="line">$(OUTDIR)/%$(RELEASE_SUFFIX).o:%.cc $(OUTDIR)/%.d.tmp</span><br><span class="line">	$(CC) $(CXXFLAGS) -c $&lt; -o $@</span><br><span class="line"></span><br><span class="line">$(OUTDIR)/%$(RELEASE_SUFFIX).o:%.cpp $(OUTDIR)/%.d.tmp</span><br><span class="line">	$(CC) $(CXXFLAGS) -c $&lt; -o $@</span><br><span class="line"></span><br><span class="line">$(OUTDIR)/%$(RELEASE_SUFFIX).o:%.c $(OUTDIR)/%.d.tmp</span><br><span class="line">	$(cc) $(CXXFLAGS) -c $&lt; -o $@</span><br></pre></td></tr></table></figure>
-<p>.o文件依赖.d.tmp和源文件，%d.tmp依赖与源文件，调用gcc生成源文件的依赖头文件，然后将这些文件include进来。这样，依赖的头文件或源文件有改动，都会再重新编译。</p>
-<h1 id="2-7-抽出来的函数"><a href="#2-7-抽出来的函数" class="headerlink" title="2.7. 抽出来的函数"></a>2.7. 抽出来的函数</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line">#########################################</span><br><span class="line">#               Function                #</span><br><span class="line">#########################################</span><br><span class="line"># $(1): static_target</span><br><span class="line"># $(2): objects</span><br><span class="line">define build_static_lib</span><br><span class="line">	$(AR) $(ARFLAGS) $(OUTDIR_PREFIX)/$(1) $(2)</span><br><span class="line">	@echo &quot; $(2) &quot; &gt; $(OUTDIR_PREFIX)/$(MOD_NAME).objectlist</span><br><span class="line">endef</span><br><span class="line"></span><br><span class="line"># $(1): shared_target</span><br><span class="line"># $(2): objects</span><br><span class="line">define build_shared_lib</span><br><span class="line">	$(CC) $(SHAREDFLAG) -o $(OUTDIR_PREFIX)/$(1) $(2)</span><br><span class="line">	@echo &quot; $(2) &quot; &gt; $(OUTDIR_PREFIX)/$(MOD_NAME).objectlist</span><br><span class="line">endef</span><br><span class="line"></span><br><span class="line"># $(1): test_target</span><br><span class="line"># $(2): objects</span><br><span class="line">#	@$(SYMBOL_DUMPPER) $(TEST_OUTDIR)/$(MOD_NAME)$@ &gt; $(SYMBOL_OUTDIR)/$(MOD_NAME)$@.sym</span><br><span class="line">#	@RT_SYMBOL_DIR=$(SYMBOL_OUTDIR)/`head -n1 $(SYMBOL_OUTDIR)/$(MOD_NAME)$@.sym | awk &apos;&#123;print $$5;&#125;&apos;`/`head -n1 $(SYMBOL_OUTDIR)/$(MOD_NAME)$@.sym | awk &apos;&#123;print $$4;&#125;&apos;`; \</span><br><span class="line">#	if [ ! -d &quot;$$RT_SYMBOL_DIR&quot; ]; then mkdir -p &quot;$$RT_SYMBOL_DIR&quot;; fi; \</span><br><span class="line">#	cp $(SYMBOL_OUTDIR)/$(MOD_NAME)$@.sym &quot;$$RT_SYMBOL_DIR&quot;/; \</span><br><span class="line">#	rm $(SYMBOL_OUTDIR)/$(MOD_NAME)$@.sym;</span><br><span class="line">define build_test_exe </span><br><span class="line">	$(CC) $(CXXFLAGS) $(OUTDIR)/$(TEST_DIR)/$(1).o $(2) $(LDFLAGS) -o $(TEST_OUTDIR)/$(MOD_NAME)$(1)</span><br><span class="line">	@mkdir -p $(MOD_OUTDIR) </span><br><span class="line">	@cp $(TEST_OUTDIR)/$(MOD_NAME)$(1) $(MOD_OUTDIR)/</span><br><span class="line">	@cp $(TEST_DIR)/*.svn $(MOD_OUTDIR)/</span><br><span class="line">	@cd UnitTest/ \</span><br><span class="line">        &amp;&amp; find script/  -name &quot;*.lua&quot; |xargs -n 1 -i dirname &#123;&#125; |sort |uniq | xargs -n 1 -i mkdir -p $(MOD_OUTDIR)/&#123;&#125; \</span><br><span class="line">	    &amp;&amp; find script/  -name &quot;*.lua&quot; |sed -e &apos;s/\.lua//g&apos; |xargs -n 1 -i bash -c &apos;LUA_PATH=$(PROJBASE)/lib/bin/?.lua $(PROJBASE)/lib/bin/luac -O3 -bg &#123;&#125;.lua $(MOD_OUTDIR)/&#123;&#125;.lc || exit 255&apos; </span><br><span class="line">	@cd $(MOD_OUTDIR)/ \</span><br><span class="line">        &amp;&amp; ln -sf ../resource . \</span><br><span class="line">        &amp;&amp; ln -sf $(MOD_NAME)$(1) `echo &quot;$(MOD_NAME)$(1)&quot; | sed -e &apos;s/$(DEBUG_SUFFIX)\|$(RELEASE_SUFFIX)$$//&apos;`  </span><br><span class="line">	@cd $(TEST_OUTDIR)/ \</span><br><span class="line">        &amp;&amp; ln -sf $(MOD_NAME)$(1) `echo &quot;$(MOD_NAME)$(1)&quot; | sed -e &apos;s/$(DEBUG_SUFFIX)\|$(RELEASE_SUFFIX)$$//&apos;`  </span><br><span class="line">	@cd $(MOD_OUTDIR)/script \</span><br><span class="line">        &amp;&amp; ln -sf ../../luacommon . </span><br><span class="line">endef</span><br></pre></td></tr></table></figure>
-<h1 id="2-8-顶层的Makefile"><a href="#2-8-顶层的Makefile" class="headerlink" title="2.8. 顶层的Makefile"></a>2.8. 顶层的Makefile</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line">#########################################</span><br><span class="line">#                top dir                #</span><br><span class="line">#########################################</span><br><span class="line">PROJBASE=$(CURDIR)</span><br><span class="line">RELEASE_DIR=Debug Release</span><br><span class="line"></span><br><span class="line">#########################################</span><br><span class="line">#                target                 #</span><br><span class="line">#########################################</span><br><span class="line">SUBDIR= sceneobj\</span><br><span class="line">	server/bfserver  \</span><br><span class="line">	server/dbserver  \</span><br><span class="line">	server/gameserver  \</span><br><span class="line">	server/loginserver  \</span><br><span class="line">	server/robotclient \</span><br><span class="line">	server/logserver \</span><br><span class="line"></span><br><span class="line">#########################################</span><br><span class="line">#            rules                      #</span><br><span class="line">#########################################</span><br><span class="line">all: msg $(SUBDIR)</span><br><span class="line">	@for DIR in $(SUBDIR);  \</span><br><span class="line">	do                     \</span><br><span class="line">		make -C $$DIR || exit -1; \</span><br><span class="line">	done                  </span><br><span class="line"></span><br><span class="line">debug: all</span><br><span class="line"></span><br><span class="line">test: debug $(SUBDIR) $(OUTDIR)</span><br><span class="line">	@for DIR in $(SUBDIR);  \</span><br><span class="line">	do                     \</span><br><span class="line">		make test -C $$DIR || exit -1; \</span><br><span class="line">	done                  </span><br><span class="line"></span><br><span class="line">rtest: release $(SUBDIR) $(OUTDIR)</span><br><span class="line">	@for DIR in $(SUBDIR);  \</span><br><span class="line">	do                     \</span><br><span class="line">		make rtest -C $$DIR || exit -1; \</span><br><span class="line">	done                  </span><br><span class="line"></span><br><span class="line">clean: $(SUBDIR)</span><br><span class="line">	@rm -rf $(RELEASE_DIR)</span><br><span class="line">	@for DIR in $(SUBDIR);  \</span><br><span class="line">	do                     \</span><br><span class="line">		make clean -C $$DIR || exit -1;  \</span><br><span class="line">	done                  </span><br><span class="line"></span><br><span class="line">release: msg</span><br><span class="line">	@for DIR in $(SUBDIR);  \</span><br><span class="line">	do                     \</span><br><span class="line">		make release -C $$DIR || exit -1; \</span><br><span class="line">	done                  </span><br><span class="line"></span><br><span class="line">msg:</span><br><span class="line">	lua $(PROJBASE)/server/luacommon/gen_msg_header.lua $(shell pwd)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">.PHONY:all test rtest clean release</span><br></pre></td></tr></table></figure>
-
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">server framework</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2019/01/04/framework-nd_Makefile/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
   
     <nav id="page-nav">
       <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><a class="extend next" rel="next" href="/page/2/">Next &raquo;</a>
@@ -1201,7 +1295,7 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
           <ul class="article-tag-list" q-show="showTags">
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">server</a>
+                <a href="javascript:void(0)" class="js-tag color1">Unity iOS build</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1209,7 +1303,11 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">Unity iOS build</a>
+                <a href="javascript:void(0)" class="js-tag color2">server</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">Unity Plugin-nd</a>
               </li>
              
               <li class="article-tag-list-item">
