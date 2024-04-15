@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head>
+
+<body>
+    <canvas id="canvas" oncontextmenu="event.preventDefault()" width="640" height="480"></canvas>
+	<p>The initial compilation and linking of the shader can take approximately 1 minute, causing the browser to become unresponsive during that time.</p>
+	<p>I will be appreciate if someone can help.</p>
+	<p>Webgl Project github: <a href='https://github.com/noodle1983/mouton-webgl'>mouton-webgl from noodle1983</a></p>
+	<p>Original Project github: <a href='https://github.com/ctrl-alt-test/mouton'>mouton from ctrl-alt-test</a></p>
+    <script type='text/javascript'>
+		const ENABLE_FAXX = true;
+		async function compileShader(gl, type, source) {
+			let startTime = Date.now();
+			let shader = gl.createShader(type);
+			if (!shader) { return; }
+
+			// Assign and compile the source to the shader object
+			gl.shaderSource(shader, source);
+			await gl.compileShader(shader);
+			
+			const success = gl.getShaderParameter(shader, gl.COMPILE_STATUS);
+			if (!success) {
+				const error = gl.getShaderInfoLog(shader);
+				console.error(`Shader compilation failed: ${error}`);
+				return;
+			}
+
+			console.log("It takes " + (Date.now() - startTime) + "ms to compile " + (type == gl.VERTEX_SHADER ? "VERTEX" : "FRAGMENT") + " shader.");
+			return shader;
+		}
+		
+		async function createProgram(gl, shader1, shader2)
+		{
+			if (shader1 == 0 && shader2 == 0){return;}
+			
+			let startTime = Date.now();
+			let shaderProgram = gl.createProgram();
+			if (shader1){
+				gl.attachShader(shaderProgram, shader1);
+			}
+			if (shader2){
+				gl.attachShader(shaderProgram, shader2);
+			}
+			await gl.linkProgram(shaderProgram);
+			
+			if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
+				let error = gl.getProgramInfoLog(shaderProgram);
+				console.error(`Shader link failed: ${error}`);
+				return;
+			}
+			
+			console.log("It takes " + (Date.now() - startTime) + "ms to link shader.");
+			return shaderProgram;
+		}
+		
+		async function main()
+		{
+			let canvas = document.getElementById('canvas');
+			let gl = canvas.getContext('webgl2');
+			window.gl = gl;
+			const { width, height } = gl.canvas;
+			gl.viewport(0, 0, width, height);
+			
+			gl.clearColor(0.9, 0.9, 0.9, 1);
+			gl.clear(gl.COLOR_BUFFER_BIT);
+			
+			var buffer = gl.createBuffer();
+			gl.bindBuffer(gl.ARRAY_BUFFER, buffer);	
+			const vertices = new Float32Array([
+				-1, -1, 
+				 1, -1, 
+				 1,  1, 
+				 1,  1, 
+				-1,  1, 
+				-1, -1
+			]);
+			gl.bufferData(gl.ARRAY_BUFFER, vertices.byteLength, gl.STATIC_DRAW);
+			gl.bufferSubData(gl.ARRAY_BUFFER, 0, vertices);
+					
+			let vertexSource = await fetch("mouton.vert")
+				.then(response => response.text())
+				.then(text => new Promise((r) => {r(text)}));
+			let fragmentSource = await fetch("mouton.frag")
+				.then(response => response.text())
+				.then(text => new Promise((r) => {r(text)}));
+			
+			let vertexShader = await compileShader(gl, gl.VERTEX_SHADER, vertexSource);
+			let fragmentShader = await compileShader(gl, gl.FRAGMENT_SHADER, fragmentSource);
+			let shaderProgram = await createProgram(gl, vertexShader, fragmentShader);
+			
+			gl.useProgram(shaderProgram);
+			let posAttrib = gl.getAttribLocation(shaderProgram, "a_position");
+			gl.enableVertexAttribArray(posAttrib);
+			gl.vertexAttribPointer(posAttrib, 2, gl.FLOAT, false, 0, 0);
+			
+			let uniformLocation = gl.getUniformLocation(shaderProgram, "iTime");
+			if (!uniformLocation) {
+				console.error("uniformLocation not found!");
+				return -1;
+			}
+			
+			let fxaaProgram, resultTexture, faxxUniformLocation;
+			if (ENABLE_FAXX){
+				let fxaaVertSource = await fetch("fxaa.vert")
+					.then(response => response.text())
+					.then(text => new Promise((r) => {r(text)}));
+				let fxaaFragSource = await fetch("fxaa.frag")
+					.then(response => response.text())
+					.then(text => new Promise((r) => {r(text)}));
+				
+				let fxaaVertShader = await compileShader(gl, gl.VERTEX_SHADER, fxaaVertSource);
+				let fxaaFragShader = await compileShader(gl, gl.FRAGMENT_SHADER, fxaaFragSource);
+				fxaaProgram = await createProgram(gl, fxaaVertShader, fxaaFragShader);
+				
+				// because all render passes need exactly the same input, we can do it once for all
+				resultTexture = gl.createTexture();
+				gl.activeTexture(gl.TEXTURE0);
+				gl.bindTexture(gl.TEXTURE_2D, resultTexture);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+
+				let faxxUniformLocation = gl.getUniformLocation(fxaaProgram, "tex");
+				if (!faxxUniformLocation) {
+					console.error("faxxUniformLocation not found!");
+					return -1;
+				}
+			}
+			
+			let startMiliTime = Date.now();
+			function draw(){
+				gl.useProgram(shaderProgram);
+			    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);	
+				gl.bufferData(gl.ARRAY_BUFFER, vertices.byteLength, gl.STATIC_DRAW);
+				gl.bufferSubData(gl.ARRAY_BUFFER, 0, vertices);
+				
+				let passSeconds = (Date.now() - startMiliTime) / 1000.0;
+				gl.uniform1f(uniformLocation, passSeconds);
+
+				gl.drawArrays(gl.TRIANGLES, 0, vertices.byteLength/4/2);
+				
+				if (ENABLE_FAXX){
+					gl.copyTexImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, 0, 0, width, height, 0);
+					
+					gl.useProgram(fxaaProgram);		
+					gl.bindBuffer(gl.ARRAY_BUFFER, buffer);	
+					gl.bufferData(gl.ARRAY_BUFFER, vertices.byteLength, gl.STATIC_DRAW);
+					gl.bufferSubData(gl.ARRAY_BUFFER, 0, vertices);
+					gl.uniform1i(faxxUniformLocation, 0);	
+					gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+					gl.drawArrays(gl.TRIANGLES, 0, vertices.byteLength/4/2);
+
+					//gl.copyTexImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, 0, 0, width, height, 0);
+					//gl.drawArrays(gl.TRIANGLES, 0, vertices.byteLength/4/2);
+				}
+
+				
+				requestAnimationFrame(draw)
+			}
+
+			requestAnimationFrame(draw);
+		}
+		main();
+    </script>
+</body>
+
+</html>
