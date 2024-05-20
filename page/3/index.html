@@ -126,6 +126,118 @@
           <div id="js-content" class="content-ll">
             
   
+    <article id="post-LuajitTableMonitor" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/12/26/LuajitTableMonitor/">luajit表数监控（忆一次项目上线中遇到的luajit对象内存泄漏）</a>
+    </h1>
+  
+
+        
+        <a href="/2018/12/26/LuajitTableMonitor/" class="archive-article-date">
+  	<time datetime="2018-12-26T11:32:10.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2018-12-26</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="1-背景"><a href="#1-背景" class="headerlink" title="1. 背景"></a>1. 背景</h1><p>我们项目为ARPG手游（也没啥见不得人的，就叫暗黑血统手游，后期不少坑钱活动的实现出自我手，轻拍。。。）。我们的服务器框架设计源于某大厂，c&#x2F;c++和luajit的实现，这次要说的是项目上线时（2014年11月左右）的一次luajit对象内存泄漏（废弃的数据没删，我们都叫泄漏）和由此产生的luajit的表记录监控工具。</p>
+<h1 id="2-问题表现"><a href="#2-问题表现" class="headerlink" title="2. 问题表现"></a>2. 问题表现</h1><p>内存增长，速率大概为200～300MB&#x2F;天。</p>
+<p>我们日志会周期性打印Tcmalloc内存（Tcmalloc分享另见同事Wallen的博客<a href="https://wallenwang.com/tcmalloc.html">TCMalloc解密</a>）和lua部分内存。获取方法如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">//tc malloc部分</span><br><span class="line">size_t tc_memory = 0;</span><br><span class="line">MallocExtension::instance()-&gt;GetNumericProperty( &quot;generic.current_allocated_bytes&quot;, &amp;tc_memory );</span><br><span class="line"></span><br><span class="line">//luajit部分</span><br><span class="line">int lua_memory = lua_gc( _L, LUA_GCCOUNT, 0 );</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>通过日志发现在线人数相似时，lua部分内存和总内存在同步增长，c&#x2F;c++部分内存（即上两个部分差值，主要是网络库、对象体系对象和World部分的内存）基本稳定。</li>
+<li>日志显示lua的gc正常。</li>
+</ul>
+<h1 id="3-分析"><a href="#3-分析" class="headerlink" title="3. 分析"></a>3. 分析</h1><ul>
+<li>c&#x2F;c++部分没有泄漏，player&#x2F;monster等对象释放没有问题，c层对象析构基本由lua层触发，lua层对应的对象内存释放也是没有问题的。</li>
+<li>通过日志显示，场景&#x2F;副本管理的释放也是没有问题的，日志监控的数据也都正常。</li>
+<li>最后怀疑是一些非主要的lua对象，存在表里没清除。因为lua的代码中，我们没有太复杂的表结构，因此这些泄漏的内存会扁平地存在少量的几个表里。因此，只要能知道各个表的记录数，结合在线人数推算其最大可能数，二者相比较，就能找出泄漏的表，在检查表的增删逻辑，就可以找到泄漏的逻辑。</li>
+</ul>
+<h1 id="4-lua表记录数告警方案"><a href="#4-lua表记录数告警方案" class="headerlink" title="4. lua表记录数告警方案"></a>4. lua表记录数告警方案</h1><p>如前述，测试发现如果直接用lua全遍历_G下所有表（因为table的值也可能是table，实际上要遍历一棵树），是分钟级别的。按泄漏的速度，内存可以撑到下一次维护，所以，先不慌，看看有没有更好的办法。</p>
+<p>然后看看c层luajit表的相关操作，看看有没有更有效率的获取方法（我们c层代码不热更，改c层代码需要等维护重启后才能生效，按泄漏速度，可以接受）。</p>
+<p>代码里主要关注的是lua table的增加和删除记录。然后看到lua table的resize（下面luajit相关代码都是luajit2.1分支代码，和1会长得有些不一样，我们已升luajit2.1，将就一下）</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">/* Resize a table to fit the new array/hash part sizes. */</span><br><span class="line">void lj_tab_resize(lua_State *L, GCtab *t, uint32_t asize, uint32_t hbits)</span><br><span class="line">&#123;</span><br><span class="line">...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>逻辑其实就是数组段或者哈希段每次超过2的n次幂，会重新分配内存。</p>
+<p>我们不需要精确的数值，其实只要在他每次resize的时候打条日志就能知道这个table大概的记录数，比如上一条日志是1024-&gt;2048，那么记录数在1024～2048之间。日志的优化见工程化部分。</p>
+<p>怎么确定是哪个table？这里我们能取到的是table的地址，取不到table的名字。这里我们曲线救国，既然能拿到lua_State，可以把lua的堆栈打出来，根据文件名和行号可以定位到代码行号，一行代码没几个table，这样就能确定下来了。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">//打印lua层堆栈，编译lua加上调试信息</span><br><span class="line">int32_t c_bt( lua_State* _L )</span><br><span class="line">&#123;	</span><br><span class="line"> 	lua_Debug ldb;</span><br><span class="line">	LOG(&quot;[LUAWRAPPER](lua_stack) begin .......... &quot;);</span><br><span class="line">    for(int32_t i = 0; lua_getstack( _L, i, &amp;ldb)==1; i++)</span><br><span class="line">    &#123;</span><br><span class="line">        lua_getinfo(_L, &quot;Slnu&quot;, &amp;ldb);</span><br><span class="line">        const char * name = ldb.name;</span><br><span class="line">        if (!name)</span><br><span class="line">            name = &quot;&quot;;</span><br><span class="line">        const char * filename = ldb.source;</span><br><span class="line"></span><br><span class="line">		LOG(&quot;[LUAWRAPPER](bt) #%d: %s:&#x27;%s&#x27;, &#x27;%s&#x27; line %d&quot;, i, ldb.what, name, filename, ldb.currentline );</span><br><span class="line">	&#125;</span><br><span class="line">	LOG(&quot;[LUAWRAPPER](lua_stack) end .......... &quot;);</span><br><span class="line">	return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>到此，表中的数据量我们能拿到个粗略的值，也知道是哪张表了，每张表最大的数值可以根据在线人数估计（大部分表记录数约等于在线人数+暂时断线人数+跨服人数，Buff之类的可以乘以一个最大倍数）。二者的比较就由人工比较了，随着时间的增长，有问题的表二者的数据会相差得越来越大。人工过滤存在嫌疑的表，再分析增删逻辑就能找到哪些逻辑忘了清数据了。</p>
+<h1 id="5-工程化"><a href="#5-工程化" class="headerlink" title="5. 工程化"></a>5. 工程化</h1><p>前面讲的只是方案，真正应用的时候，需要减少日志的条数，以减轻分析的工作量。减少日志通过下面两种方式：</p>
+<ul>
+<li>超过一定大小，才打日志，我们一个服在线是3k左右，阀值取4096。</li>
+<li>实践发现，如果表在2的n次幂边界发生频繁切换时，resize日志会重复打，所以给lua的表结构加了两个阀值，实现每个边界只打一次。</li>
+</ul>
+<p>所以，如果漏的不严重（&lt;4096），随时间增长的很慢，一个维护周期都没到4096，是查不出来的，这种就算了。<br>有些配置文件很大，这种就选择忽视了，没做特别处理。</p>
+<h1 id="5-1-lua-table表结构的修改"><a href="#5-1-lua-table表结构的修改" class="headerlink" title="5.1. lua table表结构的修改"></a>5.1. lua table表结构的修改</h1><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">typedef struct GCtab &#123;</span><br><span class="line">  ...</span><br><span class="line"></span><br><span class="line">  //extended by ludong</span><br><span class="line">  int32_t max_sizearray;</span><br><span class="line">  int32_t max_sizeobj;</span><br><span class="line">&#125; GCtab;</span><br></pre></td></tr></table></figure>
+
+<h1 id="5-2-初始化-luajit1的数值是不一样的"><a href="#5-2-初始化-luajit1的数值是不一样的" class="headerlink" title="5.2. 初始化(luajit1的数值是不一样的)"></a>5.2. 初始化(luajit1的数值是不一样的)</h1><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">/* Create a new table. Note: the slots are not initialized (yet). */</span><br><span class="line">static GCtab *newtab(lua_State *L, uint32_t asize, uint32_t hbits)</span><br><span class="line">&#123;</span><br><span class="line">  ...</span><br><span class="line"></span><br><span class="line">  t-&gt;max_sizearray = 4096;</span><br><span class="line">  t-&gt;max_sizeobj = 4096;</span><br><span class="line">  return t;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="5-3-写日志"><a href="#5-3-写日志" class="headerlink" title="5.3. 写日志"></a>5.3. 写日志</h1><p>为了解决库编译依赖的问题，将上层日志函数定义为一个函数变量，进程启动时注册赋值。函数实现赋值就不贴了。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">/* -- Table resizing ------------------------------------------------------ */</span><br><span class="line"></span><br><span class="line">typedef void (*lua_large_table_warn_func)( lua_State *L, char* fmt, ... );</span><br><span class="line">lua_large_table_warn_func g_lua_large_table_warn = NULL;</span><br><span class="line"></span><br><span class="line">/* Resize a table to fit the new array/hash part sizes. */</span><br><span class="line">void lj_tab_resize(lua_State *L, GCtab *t, uint32_t asize, uint32_t hbits)</span><br><span class="line">&#123;</span><br><span class="line">   ...</span><br><span class="line"></span><br><span class="line">  //--------------------------------------------------</span><br><span class="line">  // by ludong</span><br><span class="line">  // check resize time</span><br><span class="line">  if (t-&gt;asize &gt; t-&gt;max_sizearray || t-&gt;hmask &gt; t-&gt;max_sizeobj) &#123;</span><br><span class="line">      int32_t old_max_sizearray = t-&gt;max_sizearray;</span><br><span class="line">      int32_t old_max_sizeobj = t-&gt;max_sizeobj;</span><br><span class="line">      t-&gt;max_sizearray = (t-&gt;asize &gt; t-&gt;max_sizearray) ? t-&gt;asize : t-&gt;max_sizearray;</span><br><span class="line">      t-&gt;max_sizeobj = (t-&gt;hmask &gt; t-&gt;max_sizeobj) ? t-&gt;hmask : t-&gt;max_sizeobj;</span><br><span class="line">      if (g_lua_large_table_warn) &#123;</span><br><span class="line">          g_lua_large_table_warn( L, &quot;[ltable.c](resize) table:0x%x, array check size:%d, now:%d, node check size:%d, now:%d&quot;,</span><br><span class="line">            (size_t)t,</span><br><span class="line">            old_max_sizearray, t-&gt;asize,</span><br><span class="line">            old_max_sizeobj, t-&gt;hmask);</span><br><span class="line">      &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="5-4-性能影响"><a href="#5-4-性能影响" class="headerlink" title="5.4. 性能影响"></a>5.4. 性能影响</h1><p>每个表多8字节（我们64位了，对齐后一样的，32位自己抠一抠），对大部分表多两个逻辑判断，对大表每次日志边界打一条日志和lua堆栈，内存和cpu基本都没没感觉。</p>
+<h1 id="6-后记"><a href="#6-后记" class="headerlink" title="6. 后记"></a>6. 后记</h1><p>这个方案做好之后基本是我们项目上线必检查的日志了，总会有一些不小心就没删的。</p>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">server</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2018/12/26/LuajitTableMonitor/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-CN-HowToUseTheIpaExporter" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
@@ -228,7 +340,7 @@
 <li>首先检查Unity Editor里的控制台窗口，打包步骤里1-4步如果有错误，会输出到这里。</li>
 <li>打包步骤里第五步执行脚本的日志会被输出到下面的日志文件： <em>[TheProjectPath]&#x2F;OsxCmd&#x2F;cmd.log</em></li>
 </ul>
-<h1 id="4-联系方式"><a href="#4-联系方式" class="headerlink" title="4. 联系方式"></a>4. 联系方式</h1><p>任何问题 Email: <a href="mailto:&#110;&#111;&#x6f;&#x64;&#108;&#x65;&#x31;&#x39;&#x38;&#51;&#64;&#x31;&#x32;&#x36;&#46;&#x63;&#111;&#109;">&#110;&#111;&#x6f;&#x64;&#108;&#x65;&#x31;&#x39;&#x38;&#51;&#64;&#x31;&#x32;&#x36;&#46;&#x63;&#111;&#109;</a>.</p>
+<h1 id="4-联系方式"><a href="#4-联系方式" class="headerlink" title="4. 联系方式"></a>4. 联系方式</h1><p>任何问题 Email: <a href="mailto:&#x6e;&#x6f;&#111;&#100;&#x6c;&#101;&#x31;&#x39;&#56;&#x33;&#x40;&#49;&#x32;&#54;&#46;&#x63;&#111;&#x6d;">&#x6e;&#x6f;&#111;&#100;&#x6c;&#101;&#x31;&#x39;&#56;&#x33;&#x40;&#49;&#x32;&#54;&#46;&#x63;&#111;&#x6d;</a>.</p>
 
       
 
@@ -818,10 +930,6 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
           <ul class="article-tag-list" q-show="showTags">
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">Unity Android APP il2cpp</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color1">Unity iOS build</a>
               </li>
              
@@ -830,7 +938,7 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">private</a>
+                <a href="javascript:void(0)" class="js-tag color1">Unity Plugin-nd</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -838,7 +946,15 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">Unity Plugin-nd</a>
+                <a href="javascript:void(0)" class="js-tag color5">Unity Android APP il2cpp</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">private</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">putty-nd</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -846,11 +962,11 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">server lua</a>
+                <a href="javascript:void(0)" class="js-tag color4">c++</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">putty-nd</a>
+                <a href="javascript:void(0)" class="js-tag color1">server lua</a>
               </li>
              
               <li class="article-tag-list-item">

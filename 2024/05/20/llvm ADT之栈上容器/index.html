@@ -6,19 +6,19 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" >
   <link rel="dns-prefetch" href="http://yoursite.com">
-  <title>framework-nd之singleton模板 | Noodle&#39;s blog</title>
+  <title>llvm ADT之栈上容器 | Noodle&#39;s blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="1. 实现无侵入设计，把任意类变成singleton： Singleton.hpp 123456789101112131415161718192021222324252627282930template&lt;typename DataType, int instanceId &#x3D; 0&gt;class Singleton &#123;public:     static DataType* ins">
+  <meta name="description" content="TL;DRhttps:&#x2F;&#x2F;github.com&#x2F;noodle1983&#x2F;llvm-ADT 1. 简要模型栈上容器，其实也不太对，他其实是指预分配内存的一类容器，只是他通常作为临时变量在函数内使用，编译期就确定了大小，构造时不使用堆内存（new&#x2F;malloc），直接在栈上构建，随函数退出析构。大概的实现： 12345678910class XXX&#123;    &#x2F;&#x2F;1. 存储    ch">
 <meta property="og:type" content="article">
-<meta property="og:title" content="framework-nd之singleton模板">
-<meta property="og:url" content="http://yoursite.com/2019/01/03/framework-nd_singleton/index.html">
+<meta property="og:title" content="llvm ADT之栈上容器">
+<meta property="og:url" content="http://yoursite.com/2024/05/20/llvm%20ADT%E4%B9%8B%E6%A0%88%E4%B8%8A%E5%AE%B9%E5%99%A8/index.html">
 <meta property="og:site_name" content="Noodle&#39;s blog">
-<meta property="og:description" content="1. 实现无侵入设计，把任意类变成singleton： Singleton.hpp 123456789101112131415161718192021222324252627282930template&lt;typename DataType, int instanceId &#x3D; 0&gt;class Singleton &#123;public:     static DataType* ins">
+<meta property="og:description" content="TL;DRhttps:&#x2F;&#x2F;github.com&#x2F;noodle1983&#x2F;llvm-ADT 1. 简要模型栈上容器，其实也不太对，他其实是指预分配内存的一类容器，只是他通常作为临时变量在函数内使用，编译期就确定了大小，构造时不使用堆内存（new&#x2F;malloc），直接在栈上构建，随函数退出析构。大概的实现： 12345678910class XXX&#123;    &#x2F;&#x2F;1. 存储    ch">
 <meta property="og:locale">
-<meta property="article:published_time" content="2019-01-03T03:00:10.000Z">
-<meta property="article:modified_time" content="2023-03-25T13:08:36.208Z">
+<meta property="article:published_time" content="2024-05-20T01:32:10.000Z">
+<meta property="article:modified_time" content="2024-05-20T03:15:09.573Z">
 <meta property="article:author" content="Dong Lu">
-<meta property="article:tag" content="server framework">
+<meta property="article:tag" content="c++">
 <meta name="twitter:card" content="summary">
   
     <link rel="alternative" href="/atom.xml" title="Noodle&#39;s blog" type="application/atom+xml">
@@ -129,34 +129,80 @@
             <canvas data-colors="#eaeaea" data-sectionHeight="100" data-contentId="js-content" id="myCanvas1" class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            <article id="post-framework-nd_singleton" class="article article-type-post " itemscope itemprop="blogPost">
+            <article id="post-llvm ADT之栈上容器" class="article article-type-post " itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
         
   
     <h1 class="article-title" itemprop="name">
-      framework-nd之singleton模板
+      llvm ADT之栈上容器
     </h1>
   
 
         
-        <a href="/2019/01/03/framework-nd_singleton/" class="archive-article-date">
-  	<time datetime="2019-01-03T03:00:10.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-01-03</time>
+        <a href="/2024/05/20/llvm%20ADT%E4%B9%8B%E6%A0%88%E4%B8%8A%E5%AE%B9%E5%99%A8/" class="archive-article-date">
+  	<time datetime="2024-05-20T01:32:10.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2024-05-20</time>
 </a>
         
       </header>
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h1 id="1-实现"><a href="#1-实现" class="headerlink" title="1. 实现"></a>1. 实现</h1><p>无侵入设计，把任意类变成singleton：</p>
-<p><a href="https://github.com/noodle1983/framework-nd/blob/master/DesignPattern/include/Singleton.hpp">Singleton.hpp</a></p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">template&lt;typename DataType, int instanceId = 0&gt;</span><br><span class="line">class Singleton </span><br><span class="line">&#123;</span><br><span class="line">public: </span><br><span class="line">    static DataType* instance()</span><br><span class="line">    &#123;</span><br><span class="line">        if (NULL == dataHolderM.get())</span><br><span class="line">        &#123;</span><br><span class="line">            boost::lock_guard&lt;boost::mutex&gt; lock(dbLockMutexM);</span><br><span class="line">            if (NULL == dataHolderM.get())</span><br><span class="line">            &#123;</span><br><span class="line">                dataHolderM.reset(new DataType);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        return dataHolderM.get();</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">private:</span><br><span class="line">    Singleton()&#123;&#125;;</span><br><span class="line">    ~Singleton()&#123;&#125;;</span><br><span class="line"></span><br><span class="line">    static std::auto_ptr&lt;DataType&gt; dataHolderM;</span><br><span class="line">    static boost::mutex dbLockMutexM;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">template&lt;typename DataType, int instanceId&gt;</span><br><span class="line">std::auto_ptr&lt;DataType&gt; Singleton&lt;DataType, instanceId&gt;::dataHolderM;</span><br><span class="line"></span><br><span class="line">template&lt;typename DataType, int instanceId&gt;</span><br><span class="line">boost::mutex Singleton&lt;DataType, instanceId&gt;::dbLockMutexM;</span><br></pre></td></tr></table></figure>
-<p>因为是模板，static变量的定义可放头文件，c++编译器对每个实体类的static变量仅定义一次。</p>
-<p>如果需要多个实例，可以为instanceId赋不同的值（如下），否则忽略。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">class A&#123;&#125;;</span><br><span class="line"></span><br><span class="line">typedef DesignPattern::Singleton&lt;A, 0&gt; TheA;</span><br><span class="line">typedef DesignPattern::Singleton&lt;A, 1&gt; AnotherA;</span><br><span class="line"></span><br><span class="line">int main()</span><br><span class="line">&#123;</span><br><span class="line">    assert(TheA::instance() != AnotherA::instance());</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+        <p>TL;DR<br><a href="https://github.com/noodle1983/llvm-ADT">https://github.com/noodle1983/llvm-ADT</a></p>
+<h1 id="1-简要模型"><a href="#1-简要模型" class="headerlink" title="1. 简要模型"></a>1. 简要模型</h1><p>栈上容器，其实也不太对，他其实是指预分配内存的一类容器，只是他通常作为临时变量在函数内使用，编译期就确定了大小，构造时不使用堆内存（new&#x2F;malloc），直接在栈上构建，随函数退出析构。大概的实现：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">class XXX&#123;</span><br><span class="line">    //1. 存储</span><br><span class="line">    char storage[N];</span><br><span class="line">    </span><br><span class="line">    //2. 管理字段</span><br><span class="line">    ...</span><br><span class="line">    </span><br><span class="line">    //3. 算法</span><br><span class="line">&#125;;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
 
-<h1 id="2-使用注意"><a href="#2-使用注意" class="headerlink" title="2. 使用注意"></a>2. 使用注意</h1><p>后来碰到的问题，析构顺序需要控制，当时是通过调整链接顺序解决。现在想想，更好的是at_exit，main前先全声明一遍，逆序析构。</p>
+<p>这样就比较好理解下面这句的内存分配了。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">void hello_world()&#123;</span><br><span class="line">    llvm::SmallString&lt;10&gt; str(&quot;hello&quot;);</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这种情况也比较好理解：作为一个字段放在另外一个对象里去new一个对象，这段内存就不在栈上了。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">class ABC&#123;</span><br><span class="line">    llvm::SmallString&lt;16&gt; name;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">ABC* abc = new ABC() //&lt;- 这段内存</span><br></pre></td></tr></table></figure>
+
+<p>如果大小超过了预分配内存，会如何？如果超过了，会退化成std相应容器。</p>
+<h1 id="2-使用场景"><a href="#2-使用场景" class="headerlink" title="2. 使用场景"></a>2. 使用场景</h1><ul>
+<li>临时对象，用完就丢的场合，没必要做内存泄漏方面的校验和检查，减少内存分配器压力，对用着内存校验的堆分配器会有明显的改进。</li>
+</ul>
+<p>std平替容器</p>
+<table>
+<thead>
+<tr>
+<th>std</th>
+<th>栈容器</th>
+<th>补充说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>std::vector</td>
+<td>llvm::SmallVector</td>
+<td></td>
+</tr>
+<tr>
+<td>std::string</td>
+<td>llvm::SmallString</td>
+<td></td>
+</tr>
+<tr>
+<td>std::set</td>
+<td>llvm::SmallDenseSet</td>
+<td>对象个数限制2的n次幂</td>
+</tr>
+<tr>
+<td>std::map</td>
+<td>llvm::SmallDenseMap</td>
+<td>对象个数限制2的n次幂</td>
+</tr>
+</tbody></table>
+<p>2的n次幂的限制源于key的hash取Bucket index的Mask，改成mod应该能把他去掉，因为如果元素hash mask后是散列的，那么取余也是散列的。改了之后理论上会慢一点（但大多数时候不需要计较的那种）。我用的地方只有几处，没改。</p>
+<h1 id="3-源码"><a href="#3-源码" class="headerlink" title="3. 源码"></a>3. 源码</h1><p>源码在llvm的<a href="https://llvm.org/doxygen/dir_32453792af2ba70c54e3ccae3a790d1b.html">ADT目录</a>下, 和llvm其他代码有耦合。</p>
+<p>我把他做了剥离，参见<a href="https://github.com/noodle1983/llvm-ADT">https://github.com/noodle1983/llvm-ADT</a>，Linux&#x2F;Windows测试和使用没什么问题。<br>除了栈上容器，还有其他的一些bit容器，稀疏容器等好东西，我没用的上。</p>
+<p>用法参考源码里面的unittest，可以打开VS工程下个断点看看，Linux我直接集成进游戏工程了，没去折腾unittest。</p>
+<h1 id="4-背后的故事"><a href="#4-背后的故事" class="headerlink" title="4. 背后的故事"></a>4. 背后的故事</h1><p>吹牛B时间。</p>
+<p>我对它的认识还是刚毕业在爱立信的时候，做的第一个项目是基于Sun Solaris的，这个操作系统各方面的文档超全。在工作之余，一边读文档，一边拿项目做实验。印象很深的一个，是统计各个函数的总耗时，看看哪个函数比较耗，看看有什么改进的。结果出乎我的意料，最耗的函数，竟是std::string构造函数的内存分配，而且和第二名是数量级的差别。具体数据因历史久远就不可考了（当时的内存分配器比较弱，线程级的分配器因为有bug没开，估计加剧了这种差异），只是这个项目是一个电信的计费网关，没有密集的字符串处理，最多就是写日志和话单，所以当时印象深刻，却又束手无策，就惦记上了。</p>
+<p>在爱立信的第二个项目，一个http网关，我神奇地发现，项目自己实现了一个MyString对象，预分配的64字节的空间，超出后退化为std::string。使用过程中发现，栈上这么一个MyString对象，64字节就在栈上，大部分时候，字符串都很短小，因此不会像堆申请任何内存，随着函数的退出，栈的弹出，自然就析构释放了，十分的精巧。</p>
+<p>之后几年线程级内存分配器很快成熟，这块的消耗好像也不算什么了。仅在广州西山居的服务器后台见到，有种似曾相识的感觉。</p>
+<p>辗转到游雁游戏，后端用着一个纯c++的游戏服务器，没带任何的内存检查设施，遂开发环境挂上Address Sanitizer。不出意料，卡。100毫秒的掉帧监控发现内存分配和释放都卡，尤其是释放有一个校验内存合法性的循环十分卡。本着有困难要上，没有困难创造困难也要上的精神，想先把大量的临时字符串内存用预分配的方法去掉。再本着别人有，就不用自己做的精神在Google&#x2F;Github上搜。确实有一个SmallString，再朔源，发现是llvm的ADT(advanced data type)的单个文件剥离版。那段时间刚好在centos6上编译了最新的llvm，一看源码，我就乐了，不单止string有SmallString，vector&#x2F;set&#x2F;map都有相应的实现，和之前在爱立信看到的思路一样，超了就退化到std库，比较灵活的一点是预分配元素的个数可以通过模板参数提供。当然，还有其他的侵入式容器，bit相关容器等。</p>
+<p>好东西，只是这个库依赖于llvm的其他组件，遂做移植，裁剪，linux&#x2F;windows下可用。</p>
 
       
 
@@ -170,7 +216,7 @@
 		<ul class="article-tag-list">
 			 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">server framework</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">c++</a>
         		</li>
       		
 		</ul>
@@ -226,7 +272,7 @@
     <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
     <p>扫一扫，分享到微信</p>
     <div class="wx-qrcode">
-      <img src="//pan.baidu.com/share/qrcode?url=http://yoursite.com/2019/01/03/framework-nd_singleton/" alt="微信分享二维码">
+      <img src="//pan.baidu.com/share/qrcode?url=http://yoursite.com/2024/05/20/llvm%20ADT%E4%B9%8B%E6%A0%88%E4%B8%8A%E5%AE%B9%E5%99%A8/" alt="微信分享二维码">
     </div>
 </div>
 
@@ -240,18 +286,9 @@
   
 <nav id="article-nav">
   
-    <a href="/2019/01/04/framework-nd_Makefile/" id="article-nav-newer" class="article-nav-link-wrap">
-      <i class="icon-circle-left"></i>
-      <div class="article-nav-title">
-        
-          framework-nd之强迫症的Makefile
-        
-      </div>
-    </a>
   
-  
-    <a href="/2019/01/02/framework-nd_fifo/" id="article-nav-older" class="article-nav-link-wrap">
-      <div class="article-nav-title">framework-nd之读写线程隔离的FIFO队列</div>
+    <a href="/2024/04/14/NavmeshMarker_README/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">NavimeshMarker_ExportWithoutBake_Readme</div>
       <i class="icon-circle-right"></i>
     </a>
   
@@ -290,7 +327,7 @@
 <script src="https://jjeejj.github.io/js/gitment.js"></script>
 <script>
 var gitment = new Gitment({
-  id: "Thu Jan 03 2019 11:00:10 GMT+0800",
+  id: "Mon May 20 2024 09:32:10 GMT+0800",
   owner: 'noodle1983',
   repo: 'gitment-comments',
   oauth: {

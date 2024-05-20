@@ -126,6 +126,133 @@
           <div id="js-content" class="content-ll">
             
   
+    <article id="post-llvm ADT之栈上容器" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2024/05/20/llvm%20ADT%E4%B9%8B%E6%A0%88%E4%B8%8A%E5%AE%B9%E5%99%A8/">llvm ADT之栈上容器</a>
+    </h1>
+  
+
+        
+        <a href="/2024/05/20/llvm%20ADT%E4%B9%8B%E6%A0%88%E4%B8%8A%E5%AE%B9%E5%99%A8/" class="archive-article-date">
+  	<time datetime="2024-05-20T01:32:10.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2024-05-20</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>TL;DR<br><a href="https://github.com/noodle1983/llvm-ADT">https://github.com/noodle1983/llvm-ADT</a></p>
+<h1 id="1-简要模型"><a href="#1-简要模型" class="headerlink" title="1. 简要模型"></a>1. 简要模型</h1><p>栈上容器，其实也不太对，他其实是指预分配内存的一类容器，只是他通常作为临时变量在函数内使用，编译期就确定了大小，构造时不使用堆内存（new&#x2F;malloc），直接在栈上构建，随函数退出析构。大概的实现：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">class XXX&#123;</span><br><span class="line">    //1. 存储</span><br><span class="line">    char storage[N];</span><br><span class="line">    </span><br><span class="line">    //2. 管理字段</span><br><span class="line">    ...</span><br><span class="line">    </span><br><span class="line">    //3. 算法</span><br><span class="line">&#125;;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>这样就比较好理解下面这句的内存分配了。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">void hello_world()&#123;</span><br><span class="line">    llvm::SmallString&lt;10&gt; str(&quot;hello&quot;);</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这种情况也比较好理解：作为一个字段放在另外一个对象里去new一个对象，这段内存就不在栈上了。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">class ABC&#123;</span><br><span class="line">    llvm::SmallString&lt;16&gt; name;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">ABC* abc = new ABC() //&lt;- 这段内存</span><br></pre></td></tr></table></figure>
+
+<p>如果大小超过了预分配内存，会如何？如果超过了，会退化成std相应容器。</p>
+<h1 id="2-使用场景"><a href="#2-使用场景" class="headerlink" title="2. 使用场景"></a>2. 使用场景</h1><ul>
+<li>临时对象，用完就丢的场合，没必要做内存泄漏方面的校验和检查，减少内存分配器压力，对用着内存校验的堆分配器会有明显的改进。</li>
+</ul>
+<p>std平替容器</p>
+<table>
+<thead>
+<tr>
+<th>std</th>
+<th>栈容器</th>
+<th>补充说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>std::vector</td>
+<td>llvm::SmallVector</td>
+<td></td>
+</tr>
+<tr>
+<td>std::string</td>
+<td>llvm::SmallString</td>
+<td></td>
+</tr>
+<tr>
+<td>std::set</td>
+<td>llvm::SmallDenseSet</td>
+<td>对象个数限制2的n次幂</td>
+</tr>
+<tr>
+<td>std::map</td>
+<td>llvm::SmallDenseMap</td>
+<td>对象个数限制2的n次幂</td>
+</tr>
+</tbody></table>
+<p>2的n次幂的限制源于key的hash取Bucket index的Mask，改成mod应该能把他去掉，因为如果元素hash mask后是散列的，那么取余也是散列的。改了之后理论上会慢一点（但大多数时候不需要计较的那种）。我用的地方只有几处，没改。</p>
+<h1 id="3-源码"><a href="#3-源码" class="headerlink" title="3. 源码"></a>3. 源码</h1><p>源码在llvm的<a href="https://llvm.org/doxygen/dir_32453792af2ba70c54e3ccae3a790d1b.html">ADT目录</a>下, 和llvm其他代码有耦合。</p>
+<p>我把他做了剥离，参见<a href="https://github.com/noodle1983/llvm-ADT">https://github.com/noodle1983/llvm-ADT</a>，Linux&#x2F;Windows测试和使用没什么问题。<br>除了栈上容器，还有其他的一些bit容器，稀疏容器等好东西，我没用的上。</p>
+<p>用法参考源码里面的unittest，可以打开VS工程下个断点看看，Linux我直接集成进游戏工程了，没去折腾unittest。</p>
+<h1 id="4-背后的故事"><a href="#4-背后的故事" class="headerlink" title="4. 背后的故事"></a>4. 背后的故事</h1><p>吹牛B时间。</p>
+<p>我对它的认识还是刚毕业在爱立信的时候，做的第一个项目是基于Sun Solaris的，这个操作系统各方面的文档超全。在工作之余，一边读文档，一边拿项目做实验。印象很深的一个，是统计各个函数的总耗时，看看哪个函数比较耗，看看有什么改进的。结果出乎我的意料，最耗的函数，竟是std::string构造函数的内存分配，而且和第二名是数量级的差别。具体数据因历史久远就不可考了（当时的内存分配器比较弱，线程级的分配器因为有bug没开，估计加剧了这种差异），只是这个项目是一个电信的计费网关，没有密集的字符串处理，最多就是写日志和话单，所以当时印象深刻，却又束手无策，就惦记上了。</p>
+<p>在爱立信的第二个项目，一个http网关，我神奇地发现，项目自己实现了一个MyString对象，预分配的64字节的空间，超出后退化为std::string。使用过程中发现，栈上这么一个MyString对象，64字节就在栈上，大部分时候，字符串都很短小，因此不会像堆申请任何内存，随着函数的退出，栈的弹出，自然就析构释放了，十分的精巧。</p>
+<p>之后几年线程级内存分配器很快成熟，这块的消耗好像也不算什么了。仅在广州西山居的服务器后台见到，有种似曾相识的感觉。</p>
+<p>辗转到游雁游戏，后端用着一个纯c++的游戏服务器，没带任何的内存检查设施，遂开发环境挂上Address Sanitizer。不出意料，卡。100毫秒的掉帧监控发现内存分配和释放都卡，尤其是释放有一个校验内存合法性的循环十分卡。本着有困难要上，没有困难创造困难也要上的精神，想先把大量的临时字符串内存用预分配的方法去掉。再本着别人有，就不用自己做的精神在Google&#x2F;Github上搜。确实有一个SmallString，再朔源，发现是llvm的ADT(advanced data type)的单个文件剥离版。那段时间刚好在centos6上编译了最新的llvm，一看源码，我就乐了，不单止string有SmallString，vector&#x2F;set&#x2F;map都有相应的实现，和之前在爱立信看到的思路一样，超了就退化到std库，比较灵活的一点是预分配元素的个数可以通过模板参数提供。当然，还有其他的侵入式容器，bit相关容器等。</p>
+<p>好东西，只是这个库依赖于llvm的其他组件，遂做移植，裁剪，linux&#x2F;windows下可用。</p>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">c++</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2024/05/20/llvm%20ADT%E4%B9%8B%E6%A0%88%E4%B8%8A%E5%AE%B9%E5%99%A8/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-NavmeshMarker_README" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
@@ -370,7 +497,7 @@ The runtime file is in Detour format. You need to pack it to the release version
 
 <p><span id="8"></span></p>
 <h1 id="8-Support-Contact-When-you-think-of-it-is-better-if…-Consultation"><a href="#8-Support-Contact-When-you-think-of-it-is-better-if…-Consultation" class="headerlink" title="8. Support &amp; Contact &amp; When you think of it is better if… &amp; Consultation"></a><a href="#8">8. Support &amp; Contact &amp; When you think of it is better if… &amp; Consultation</a></h1><ul>
-<li>email: <a href="mailto:&#x6e;&#111;&#x6f;&#100;&#x6c;&#x65;&#49;&#x39;&#x38;&#x33;&#x40;&#49;&#50;&#54;&#x2e;&#99;&#x6f;&#109;">&#x6e;&#111;&#x6f;&#100;&#x6c;&#x65;&#49;&#x39;&#x38;&#x33;&#x40;&#49;&#50;&#54;&#x2e;&#99;&#x6f;&#109;</a></li>
+<li>email: <a href="mailto:&#x6e;&#x6f;&#x6f;&#100;&#x6c;&#x65;&#49;&#57;&#56;&#51;&#x40;&#x31;&#50;&#x36;&#46;&#99;&#x6f;&#109;">&#x6e;&#x6f;&#x6f;&#100;&#x6c;&#x65;&#49;&#57;&#56;&#51;&#x40;&#x31;&#50;&#x36;&#46;&#99;&#x6f;&#109;</a></li>
 </ul>
 
       
@@ -1060,7 +1187,7 @@ server->>client: FIN</pre>
 <hr>
 <h3 id="rz"><a href="#rz" class="headerlink" title="rz"></a>rz</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line">[ludong@VM-0-17-centos rzsz-nd]$ ./rz --help</span><br><span class="line"></span><br><span class="line">USAGE:</span><br><span class="line"></span><br><span class="line">   ./rz  [-f] [-p &lt;directory/file path&gt;] [-s &lt;directory path&gt;] [-c</span><br><span class="line">         &lt;directory path&gt;] [-l &lt;filename&gt;] [-d &lt;int:0-5&gt;] [--] [--version]</span><br><span class="line">         [-h]</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Where:</span><br><span class="line"></span><br><span class="line">   -f,  --rz-folder-mode</span><br><span class="line">     rz folder mode, make client to select folder.</span><br><span class="line"></span><br><span class="line">   -p &lt;directory/file path&gt;,  --preset-files &lt;directory/file path&gt;</span><br><span class="line">     Depending on ZVERSION:1, preset rz files splited by &#x27;#&#x27; to skip file</span><br><span class="line">     selection</span><br><span class="line"></span><br><span class="line">   -s &lt;directory path&gt;,  --server-working-dir &lt;directory path&gt;</span><br><span class="line">     Depending on ZVERSION:1, set the working directory on the server side.</span><br><span class="line">     It is current directory if not set.</span><br><span class="line"></span><br><span class="line">   -c &lt;directory path&gt;,  --client-working-dir &lt;directory path&gt;</span><br><span class="line">     Depending on ZVERSION:1, set the working directory on the client side.</span><br><span class="line">     It is desktop if not set.</span><br><span class="line"></span><br><span class="line">   -l &lt;filename&gt;,  --log &lt;filename&gt;</span><br><span class="line">     File to log</span><br><span class="line"></span><br><span class="line">   -d &lt;int:0-5&gt;,  --debug &lt;int:0-5&gt;</span><br><span class="line">     set debug level. 0: TRACE; 1: DEBUG; 2: INFO; 3: WARN; 4: ERROR; 5:</span><br><span class="line">     FATAL;</span><br><span class="line"></span><br><span class="line">   --,  --ignore_rest</span><br><span class="line">     Ignores the rest of the labeled arguments following this flag.</span><br><span class="line"></span><br><span class="line">   --version</span><br><span class="line">     Displays version information and exits.</span><br><span class="line"></span><br><span class="line">   -h,  --help</span><br><span class="line">     Displays usage information and exits.</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">   Receive file(s) with ZMODEM protocol.</span><br><span class="line"></span><br></pre></td></tr></table></figure>
 
-<h1 id="7-License"><a href="#7-License" class="headerlink" title="7. License"></a>7. License</h1><p>Except for extra permissions from Dong Lu(<a href="mailto:&#x6e;&#111;&#111;&#x64;&#108;&#x65;&#49;&#57;&#x38;&#x33;&#64;&#x31;&#x32;&#54;&#46;&#99;&#111;&#109;">&#x6e;&#111;&#111;&#x64;&#108;&#x65;&#49;&#57;&#x38;&#x33;&#64;&#x31;&#x32;&#54;&#46;&#99;&#111;&#109;</a>), this software is released under version 3 of the GNU General Public License (GPLv3).</p>
+<h1 id="7-License"><a href="#7-License" class="headerlink" title="7. License"></a>7. License</h1><p>Except for extra permissions from Dong Lu(<a href="mailto:&#x6e;&#x6f;&#x6f;&#100;&#108;&#101;&#49;&#x39;&#56;&#x33;&#x40;&#x31;&#50;&#54;&#46;&#x63;&#111;&#x6d;">&#x6e;&#x6f;&#x6f;&#100;&#108;&#101;&#49;&#x39;&#56;&#x33;&#x40;&#x31;&#50;&#54;&#46;&#x63;&#111;&#x6d;</a>), this software is released under version 3 of the GNU General Public License (GPLv3).</p>
 <h3 id="other-modules"><a href="#other-modules" class="headerlink" title="other modules"></a>other modules</h3><table>
 <thead>
 <tr>
@@ -1362,85 +1489,6 @@ server->>client: FIN</pre>
 
 
   
-    <article id="post-putty-nd7.4" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2020/10/12/putty-nd7.4/">putty-nd7.4 release</a>
-    </h1>
-  
-
-        
-        <a href="/2020/10/12/putty-nd7.4/" class="archive-article-date">
-  	<time datetime="2020-10-12T13:58:53.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-10-12</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h3 id="1-Bugs"><a href="#1-Bugs" class="headerlink" title="1. Bugs"></a>1. Bugs</h3><pre><code>1. The serial connection is broke. 
-2. The destination session can be wrong in Google cloud dialog if nothing is selected.
-</code></pre>
-<h3 id="2-Other-changes"><a href="#2-Other-changes" class="headerlink" title="2. Other changes"></a>2. Other changes</h3><pre><code>1. Do not reset the session group collapse status.
-</code></pre>
-<h3 id="3-Ongoing"><a href="#3-Ongoing" class="headerlink" title="3. Ongoing"></a>3. Ongoing</h3><h3 id="4-Downloads"><a href="#4-Downloads" class="headerlink" title="4. Downloads"></a>4. Downloads</h3><p><a href="https://sourceforge.net/projects/putty-nd/files/old/putty_nd7.4.zip/download">Sourceforge</a><br><a href="https://noodle1983.github.io/putty-nd/putty_nd7.4.zip">Github</a></p>
-
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">putty-nd</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2020/10/12/putty-nd7.4/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
   
     <nav id="page-nav">
       <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><a class="extend next" rel="next" href="/page/2/">Next &raquo;</a>
@@ -1540,10 +1588,6 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
           <ul class="article-tag-list" q-show="showTags">
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">Unity Android APP il2cpp</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color1">Unity iOS build</a>
               </li>
              
@@ -1552,7 +1596,7 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">private</a>
+                <a href="javascript:void(0)" class="js-tag color1">Unity Plugin-nd</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1560,7 +1604,15 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">Unity Plugin-nd</a>
+                <a href="javascript:void(0)" class="js-tag color5">Unity Android APP il2cpp</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">private</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">putty-nd</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1568,11 +1620,11 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">server lua</a>
+                <a href="javascript:void(0)" class="js-tag color4">c++</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">putty-nd</a>
+                <a href="javascript:void(0)" class="js-tag color1">server lua</a>
               </li>
              
               <li class="article-tag-list-item">

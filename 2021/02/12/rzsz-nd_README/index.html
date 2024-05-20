@@ -272,7 +272,7 @@ server->>client: FIN</pre>
 <hr>
 <h3 id="rz"><a href="#rz" class="headerlink" title="rz"></a>rz</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line">[ludong@VM-0-17-centos rzsz-nd]$ ./rz --help</span><br><span class="line"></span><br><span class="line">USAGE:</span><br><span class="line"></span><br><span class="line">   ./rz  [-f] [-p &lt;directory/file path&gt;] [-s &lt;directory path&gt;] [-c</span><br><span class="line">         &lt;directory path&gt;] [-l &lt;filename&gt;] [-d &lt;int:0-5&gt;] [--] [--version]</span><br><span class="line">         [-h]</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Where:</span><br><span class="line"></span><br><span class="line">   -f,  --rz-folder-mode</span><br><span class="line">     rz folder mode, make client to select folder.</span><br><span class="line"></span><br><span class="line">   -p &lt;directory/file path&gt;,  --preset-files &lt;directory/file path&gt;</span><br><span class="line">     Depending on ZVERSION:1, preset rz files splited by &#x27;#&#x27; to skip file</span><br><span class="line">     selection</span><br><span class="line"></span><br><span class="line">   -s &lt;directory path&gt;,  --server-working-dir &lt;directory path&gt;</span><br><span class="line">     Depending on ZVERSION:1, set the working directory on the server side.</span><br><span class="line">     It is current directory if not set.</span><br><span class="line"></span><br><span class="line">   -c &lt;directory path&gt;,  --client-working-dir &lt;directory path&gt;</span><br><span class="line">     Depending on ZVERSION:1, set the working directory on the client side.</span><br><span class="line">     It is desktop if not set.</span><br><span class="line"></span><br><span class="line">   -l &lt;filename&gt;,  --log &lt;filename&gt;</span><br><span class="line">     File to log</span><br><span class="line"></span><br><span class="line">   -d &lt;int:0-5&gt;,  --debug &lt;int:0-5&gt;</span><br><span class="line">     set debug level. 0: TRACE; 1: DEBUG; 2: INFO; 3: WARN; 4: ERROR; 5:</span><br><span class="line">     FATAL;</span><br><span class="line"></span><br><span class="line">   --,  --ignore_rest</span><br><span class="line">     Ignores the rest of the labeled arguments following this flag.</span><br><span class="line"></span><br><span class="line">   --version</span><br><span class="line">     Displays version information and exits.</span><br><span class="line"></span><br><span class="line">   -h,  --help</span><br><span class="line">     Displays usage information and exits.</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">   Receive file(s) with ZMODEM protocol.</span><br><span class="line"></span><br></pre></td></tr></table></figure>
 
-<h1 id="7-License"><a href="#7-License" class="headerlink" title="7. License"></a>7. License</h1><p>Except for extra permissions from Dong Lu(<a href="mailto:&#x6e;&#111;&#111;&#x64;&#108;&#x65;&#49;&#57;&#x38;&#x33;&#64;&#x31;&#x32;&#54;&#46;&#99;&#111;&#109;">&#x6e;&#111;&#111;&#x64;&#108;&#x65;&#49;&#57;&#x38;&#x33;&#64;&#x31;&#x32;&#54;&#46;&#99;&#111;&#109;</a>), this software is released under version 3 of the GNU General Public License (GPLv3).</p>
+<h1 id="7-License"><a href="#7-License" class="headerlink" title="7. License"></a>7. License</h1><p>Except for extra permissions from Dong Lu(<a href="mailto:&#x6e;&#x6f;&#x6f;&#100;&#108;&#101;&#49;&#x39;&#56;&#x33;&#x40;&#x31;&#50;&#54;&#46;&#x63;&#111;&#x6d;">&#x6e;&#x6f;&#x6f;&#100;&#108;&#101;&#49;&#x39;&#56;&#x33;&#x40;&#x31;&#50;&#54;&#46;&#x63;&#111;&#x6d;</a>), this software is released under version 3 of the GNU General Public License (GPLv3).</p>
 <h3 id="other-modules"><a href="#other-modules" class="headerlink" title="other modules"></a>other modules</h3><table>
 <thead>
 <tr>
@@ -524,10 +524,6 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
           <ul class="article-tag-list" q-show="showTags">
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">Unity Android APP il2cpp</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color1">Unity iOS build</a>
               </li>
              
@@ -536,7 +532,7 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">private</a>
+                <a href="javascript:void(0)" class="js-tag color1">Unity Plugin-nd</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -544,7 +540,15 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">Unity Plugin-nd</a>
+                <a href="javascript:void(0)" class="js-tag color5">Unity Android APP il2cpp</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">private</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">putty-nd</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -552,11 +556,11 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">server lua</a>
+                <a href="javascript:void(0)" class="js-tag color4">c++</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">putty-nd</a>
+                <a href="javascript:void(0)" class="js-tag color1">server lua</a>
               </li>
              
               <li class="article-tag-list-item">
