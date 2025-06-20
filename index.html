@@ -139,7 +139,7 @@
 
         
         <a href="/2025/06/20/wxWidget-wasm-demo/" class="archive-article-date">
-  	<time datetime="2025-06-20T11:32:10.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2025-06-20</time>
+  	<time datetime="2025-06-20T03:32:10.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2025-06-20</time>
 </a>
         
       </header>
@@ -187,6 +187,121 @@
       
         <p class="article-more-link">
           <a class="article-more-a" href="/2025/06/20/wxWidget-wasm-demo/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
+    <article id="post-mouton-webgl_animation" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2025/06/19/mouton-webgl_animation/">mouton-webgl animation</a>
+    </h1>
+  
+
+        
+        <a href="/2025/06/19/mouton-webgl_animation/" class="archive-article-date">
+  	<time datetime="2025-06-19T03:32:10.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2025-06-19</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="mouton-webgl-animation"><a href="#mouton-webgl-animation" class="headerlink" title="mouton-webgl animation"></a>mouton-webgl animation</h1><ul>
+<li>It’s a tiny 4kB animation made with a raymarching shader — super cool!</li>
+<li>Originally built by ctrl-alt-test on Windows.</li>
+<li>I had some fun and ported it to WebGL so you can enjoy it right in your browser.</li>
+</ul>
+<p>Github Repo:</p>
+<ul>
+<li><a href="https://github.com/ctrl-alt-test/mouton">ctrl-alt-test&#x2F;mouton</a></li>
+<li><a href="https://github.com/noodle1983/mouton-webgl">noodle1983&#x2F;mouton-webgl</a></li>
+</ul>
+
+<div class="mouton-webgl">
+  <img id="preview"
+       src="https://cdn.jsdelivr.net/gh/noodle1983/mouton-webgl/screenshot/1.png"
+       style="width: 670px; height: 500px; object-fit: contain;"
+       alt="Preview" />
+
+  <iframe id="mouton-webgl"
+          data-src="/mouton-webgl/index.html"
+          width="670px"
+          height="500px"
+          allowfullscreen
+          allow-scripts
+          style="display: none;"></iframe>
+</div>
+
+<script>
+  window.onload = function () {
+    var iframe = document.getElementById('mouton-webgl');
+    var preview = document.getElementById('preview');
+
+    if (iframe) {
+      iframe.src = iframe.getAttribute('data-src');
+      iframe.style.display = 'block';
+
+      iframe.onload = function () {
+        preview.style.display = 'none';
+      };
+    }
+  };
+</script>
+
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">webgl raymarching</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2025/06/19/mouton-webgl_animation/">展开全文 >></a>
         </p>
       
 
@@ -835,7 +950,7 @@ The runtime file is in Detour format. You need to pack it to the release version
 
 <p><span id="8"></span></p>
 <h1 id="8-Support-Contact-When-you-think-of-it-is-better-if…-Consultation"><a href="#8-Support-Contact-When-you-think-of-it-is-better-if…-Consultation" class="headerlink" title="8. Support &amp; Contact &amp; When you think of it is better if… &amp; Consultation"></a><a href="#8">8. Support &amp; Contact &amp; When you think of it is better if… &amp; Consultation</a></h1><ul>
-<li>email: <a href="mailto:&#110;&#111;&#x6f;&#100;&#108;&#x65;&#x31;&#x39;&#x38;&#51;&#x40;&#49;&#50;&#x36;&#x2e;&#99;&#111;&#109;">&#110;&#111;&#x6f;&#100;&#108;&#x65;&#x31;&#x39;&#x38;&#51;&#x40;&#49;&#50;&#x36;&#x2e;&#99;&#111;&#109;</a></li>
+<li>email: <a href="mailto:&#110;&#111;&#111;&#100;&#x6c;&#x65;&#49;&#x39;&#x38;&#x33;&#64;&#49;&#x32;&#x36;&#46;&#99;&#x6f;&#x6d;">&#110;&#111;&#111;&#100;&#x6c;&#x65;&#49;&#x39;&#x38;&#x33;&#64;&#49;&#x32;&#x36;&#46;&#99;&#x6f;&#x6d;</a></li>
 </ul>
 
       
@@ -1277,7 +1392,7 @@ server->>client: FIN</pre>
 <hr>
 <h3 id="rz"><a href="#rz" class="headerlink" title="rz"></a>rz</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line">[ludong@VM-0-17-centos rzsz-nd]$ ./rz --help</span><br><span class="line"></span><br><span class="line">USAGE:</span><br><span class="line"></span><br><span class="line">   ./rz  [-f] [-p &lt;directory/file path&gt;] [-s &lt;directory path&gt;] [-c</span><br><span class="line">         &lt;directory path&gt;] [-l &lt;filename&gt;] [-d &lt;int:0-5&gt;] [--] [--version]</span><br><span class="line">         [-h]</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Where:</span><br><span class="line"></span><br><span class="line">   -f,  --rz-folder-mode</span><br><span class="line">     rz folder mode, make client to select folder.</span><br><span class="line"></span><br><span class="line">   -p &lt;directory/file path&gt;,  --preset-files &lt;directory/file path&gt;</span><br><span class="line">     Depending on ZVERSION:1, preset rz files splited by &#x27;#&#x27; to skip file</span><br><span class="line">     selection</span><br><span class="line"></span><br><span class="line">   -s &lt;directory path&gt;,  --server-working-dir &lt;directory path&gt;</span><br><span class="line">     Depending on ZVERSION:1, set the working directory on the server side.</span><br><span class="line">     It is current directory if not set.</span><br><span class="line"></span><br><span class="line">   -c &lt;directory path&gt;,  --client-working-dir &lt;directory path&gt;</span><br><span class="line">     Depending on ZVERSION:1, set the working directory on the client side.</span><br><span class="line">     It is desktop if not set.</span><br><span class="line"></span><br><span class="line">   -l &lt;filename&gt;,  --log &lt;filename&gt;</span><br><span class="line">     File to log</span><br><span class="line"></span><br><span class="line">   -d &lt;int:0-5&gt;,  --debug &lt;int:0-5&gt;</span><br><span class="line">     set debug level. 0: TRACE; 1: DEBUG; 2: INFO; 3: WARN; 4: ERROR; 5:</span><br><span class="line">     FATAL;</span><br><span class="line"></span><br><span class="line">   --,  --ignore_rest</span><br><span class="line">     Ignores the rest of the labeled arguments following this flag.</span><br><span class="line"></span><br><span class="line">   --version</span><br><span class="line">     Displays version information and exits.</span><br><span class="line"></span><br><span class="line">   -h,  --help</span><br><span class="line">     Displays usage information and exits.</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">   Receive file(s) with ZMODEM protocol.</span><br><span class="line"></span><br></pre></td></tr></table></figure>
 
-<h1 id="7-License"><a href="#7-License" class="headerlink" title="7. License"></a>7. License</h1><p>Except for extra permissions from Dong Lu(<a href="mailto:&#110;&#111;&#x6f;&#x64;&#x6c;&#x65;&#49;&#57;&#x38;&#x33;&#64;&#x31;&#50;&#54;&#46;&#x63;&#x6f;&#109;">&#110;&#111;&#x6f;&#x64;&#x6c;&#x65;&#49;&#57;&#x38;&#x33;&#64;&#x31;&#50;&#54;&#46;&#x63;&#x6f;&#109;</a>), this software is released under version 3 of the GNU General Public License (GPLv3).</p>
+<h1 id="7-License"><a href="#7-License" class="headerlink" title="7. License"></a>7. License</h1><p>Except for extra permissions from Dong Lu(<a href="mailto:&#x6e;&#x6f;&#111;&#100;&#108;&#101;&#x31;&#x39;&#56;&#x33;&#64;&#49;&#x32;&#54;&#46;&#99;&#111;&#x6d;">&#x6e;&#x6f;&#111;&#100;&#108;&#101;&#x31;&#x39;&#56;&#x33;&#64;&#49;&#x32;&#54;&#46;&#99;&#111;&#x6d;</a>), this software is released under version 3 of the GNU General Public License (GPLv3).</p>
 <h3 id="other-modules"><a href="#other-modules" class="headerlink" title="other modules"></a>other modules</h3><table>
 <thead>
 <tr>
@@ -1425,83 +1540,6 @@ server->>client: FIN</pre>
 
 
   
-    <article id="post-putty-nd7.5" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2020/10/31/putty-nd7.5/">putty-nd7.5 release</a>
-    </h1>
-  
-
-        
-        <a href="/2020/10/31/putty-nd7.5/" class="archive-article-date">
-  	<time datetime="2020-10-31T13:58:53.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-10-31</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h3 id="1-Bugs"><a href="#1-Bugs" class="headerlink" title="1. Bugs"></a>1. Bugs</h3><pre><code>1. making the Default Settings&#39;s protocol/hostname/portnum unsavable.
-2. disable the flag TOOLTYPE_HOST_ARG_CAN_BE_SESSION in cmdline to avoid the missed-saving of the tmp/session.
-</code></pre>
-<h3 id="2-Other-changes"><a href="#2-Other-changes" class="headerlink" title="2. Other changes"></a>2. Other changes</h3><h3 id="3-Ongoing"><a href="#3-Ongoing" class="headerlink" title="3. Ongoing"></a>3. Ongoing</h3><h3 id="4-Downloads"><a href="#4-Downloads" class="headerlink" title="4. Downloads"></a>4. Downloads</h3><p><a href="https://sourceforge.net/projects/putty-nd/files/old/putty_nd7.5.zip/download">Sourceforge</a></p>
-
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">putty-nd</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2020/10/31/putty-nd7.5/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
   
     <nav id="page-nav">
       <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><a class="extend next" rel="next" href="/page/2/">Next &raquo;</a>
@@ -1601,11 +1639,11 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
           <ul class="article-tag-list" q-show="showTags">
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">Unity iOS build</a>
+                <a href="javascript:void(0)" class="js-tag color5">Unity Android APP il2cpp</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">Unity Android APP il2cpp</a>
+                <a href="javascript:void(0)" class="js-tag color1">Unity iOS build</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1614,6 +1652,10 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color2">server framework</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">webgl raymarching</a>
               </li>
              
               <li class="article-tag-list-item">
