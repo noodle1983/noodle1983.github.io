@@ -6,14 +6,19 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" >
   <link rel="dns-prefetch" href="http://yoursite.com">
-  <title>Archives: 2024/5 | Noodle&#39;s blog</title>
+  <title>走进Unity WebGL技术方案 | Noodle&#39;s blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta property="og:type" content="website">
-<meta property="og:title" content="Noodle&#39;s blog">
-<meta property="og:url" content="http://yoursite.com/archives/2024/05/index.html">
+  <meta name="description" content="1. 概述小游戏刚出来时，因为跑不起太炫的效果，常被人认为low。但是如果我们知道每个用户的成本，就会发现小游戏可以以更低成本把游戏推向我们的用户，低得让人没法拒绝。随着手机硬件性能的提升和Unity&#x2F;微信这等行业巨头做的努力，小游戏优化后运行3D的MMO也没什么问题。 另一方面，很多的互联网产品都面临着流量变现的压力，比如有道云笔记免费用户突然只能支持两个终端，虽然影响不大，但我能感受">
+<meta property="og:type" content="article">
+<meta property="og:title" content="走进Unity WebGL技术方案">
+<meta property="og:url" content="http://yoursite.com/2024/07/09/%E8%B5%B0%E8%BF%9BUnity%20WebGL%E6%8A%80%E6%9C%AF%E6%96%B9%E6%A1%88/index.html">
 <meta property="og:site_name" content="Noodle&#39;s blog">
+<meta property="og:description" content="1. 概述小游戏刚出来时，因为跑不起太炫的效果，常被人认为low。但是如果我们知道每个用户的成本，就会发现小游戏可以以更低成本把游戏推向我们的用户，低得让人没法拒绝。随着手机硬件性能的提升和Unity&#x2F;微信这等行业巨头做的努力，小游戏优化后运行3D的MMO也没什么问题。 另一方面，很多的互联网产品都面临着流量变现的压力，比如有道云笔记免费用户突然只能支持两个终端，虽然影响不大，但我能感受">
 <meta property="og:locale">
+<meta property="article:published_time" content="2024-07-09T11:32:10.000Z">
+<meta property="article:modified_time" content="2025-06-20T02:13:47.514Z">
 <meta property="article:author" content="Dong Lu">
+<meta property="article:tag" content="Unity WebGL 小游戏 wasm">
 <meta name="twitter:card" content="summary">
   
     <link rel="alternative" href="/atom.xml" title="Noodle&#39;s blog" type="application/atom+xml">
@@ -124,60 +129,345 @@
             <canvas data-colors="#eaeaea" data-sectionHeight="100" data-contentId="js-content" id="myCanvas1" class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            
-  
-  
+            <article id="post-走进Unity WebGL技术方案" class="article article-type-post " itemscope itemprop="blogPost">
+  <div class="article-inner">
     
-    
-      
-      
-      <section class="archives-wrap">
-        <div class="archive-year-wrap">
-          <a href="/archives/2024" class="archive-year">2024</a>
-        </div>
-        <div class="archives">
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2024/05/20/llvm%20ADT%E4%B9%8B%E6%A0%88%E4%B8%8A%E5%AE%B9%E5%99%A8/" class="archive-article-date">
-  	<time datetime="2024-05-20T01:32:10.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2024-05-20</time>
-</a>
-        </div>
-    	 
+      <header class="article-header">
+        
   
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2024/05/20/llvm%20ADT%E4%B9%8B%E6%A0%88%E4%B8%8A%E5%AE%B9%E5%99%A8/">llvm ADT之栈上容器</a>
+    <h1 class="article-title" itemprop="name">
+      走进Unity WebGL技术方案
     </h1>
   
 
-        <div class="article-info info-on-right">
-          
+        
+        <a href="/2024/07/09/%E8%B5%B0%E8%BF%9BUnity%20WebGL%E6%8A%80%E6%9C%AF%E6%96%B9%E6%A1%88/" class="archive-article-date">
+  	<time datetime="2024-07-09T11:32:10.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2024-07-09</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="1-概述"><a href="#1-概述" class="headerlink" title="1. 概述"></a>1. 概述</h1><p>小游戏刚出来时，因为跑不起太炫的效果，常被人认为low。但是如果我们知道每个用户的成本，就会发现小游戏可以以更低成本把游戏推向我们的用户，低得让人没法拒绝。随着手机硬件性能的提升和Unity&#x2F;微信这等行业巨头做的努力，小游戏优化后运行3D的MMO也没什么问题。</p>
+<p>另一方面，很多的互联网产品都面临着流量变现的压力，比如有道云笔记免费用户突然只能支持两个终端，虽然影响不大，但我能感受到其中的无奈。</p>
+<p>我的想法是，何不接入小游戏试试？正是看到这里大有可为，借着项目接入支付宝小游戏的机会，我对Unity的WebGL技术方案的接入方式做了研究，基本能跑进游戏，对APP怎么接入Unity WebGL也有了基本了解。这里做个总结，希望优秀的APP能活得更好，优秀的游戏渗透得更快。</p>
+<p>此文均为我一家之言，个人理解难免有误，欢迎斧正。</p>
+<h1 id="2-Unity-WebGL技术方案"><a href="#2-Unity-WebGL技术方案" class="headerlink" title="2. Unity WebGL技术方案"></a>2. Unity WebGL技术方案</h1><h2 id="2-1-Unity小游戏的两种技术方案"><a href="#2-1-Unity小游戏的两种技术方案" class="headerlink" title="2.1. Unity小游戏的两种技术方案"></a>2.1. Unity小游戏的两种技术方案</h2><ul>
+<li>Native Instant Game</li>
+<li>WebGL</li>
+</ul>
+<p>具体介绍请参考Unity官方引擎底层架构技术主管赵亮在2023年中Unity开放日上的分享：<a href="https://new.qq.com/rain/a/20230612A0AUZE00">Unity小游戏开发简介</a>（&lt;-没找到官方的链接，这个是腾讯网的）。分享讲到了Unity小游戏的现状，两个方案的优缺点，优化方法和未来的技术发展方向，高屋建瓴，值得一读。</p>
+<p>本文仅涉及WebGL方案，文章里面提到的未来的WebGPU也是基于Web标准规范的，可以认为是WebGL方案的延续，其中的变化仅限于Canvas的Context和相关接口。</p>
+<h2 id="2-2-WebGL方案的限制"><a href="#2-2-WebGL方案的限制" class="headerlink" title="2.2. WebGL方案的限制"></a>2.2. WebGL方案的限制</h2><p>WebGL方案的限制，或者说是浏览器的js执行环境的限制，首先，他是单线程的（先不讨论Web worker，单线程模式在可预见的未来都是要支持的），意味着Unity的执行不能独占执行的上下文，执行完得释放，也不能自发地触发执行。他就像一个黑盒子，任何的操作都只能由js触发，包括帧循环，定时器，事件处理。如果我们暂停js的处理，Unity没有任何代码在执行。</p>
+<p>由于安全的原因，js执行环境没有能力访问本地的文件系统，只能从远端下载，只是如果浏览器发现有Cache且有效，会直接返回。这是很大的限制，游戏内目光所及，均是从文件加载（有纯shader实现的动画，比如<a href="https://noodle1983.github.io/mouton-webgl/index.html">这个</a>，shader的初始化会卡1分钟，这样做不了游戏）。</p>
+<p>所以可以想象，Unity在移植整套方案到WebGL的时候做了大量的工作，同时也暴露了很多实现到JS层，只要编译输出Debug版本，就能得到一份可读的JS中间层代码，给APP接入小游戏带来便利。以此为基础，我们可以分析App小游戏的接入，需要哪些组件，也可以自行分析出错的原因是什么。</p>
+<h2 id="2-3-Unity-WebGL方案的运行结构"><a href="#2-3-Unity-WebGL方案的运行结构" class="headerlink" title="2.3. Unity WebGL方案的运行结构"></a>2.3. Unity WebGL方案的运行结构</h2><pre class="mermaid">block-beta
+columns 1
+  U["Unity Engine and upper"]
+  block:Mandatory
+    Canvas["webgl Context Canvas"]
+
+    VirtualFileSystem
+    http["HTTP Event System"]
+    WebAudio
+  end</pre>
+
+<p>上图是我个人理解，VirtualFileSystem提供的各种资源（assets），HTTP的事件系统提供玩家操作输入，经过Unity引擎和上层逻辑的处理，输出渲染结果到webgl的Canvas和播放音频。</p>
+<h2 id="2-4-方案必要的组件"><a href="#2-4-方案必要的组件" class="headerlink" title="2.4. 方案必要的组件"></a>2.4. 方案必要的组件</h2><ul>
+<li>webgl Context Canvas，渲染输出</li>
+<li>WebAssembly，加载c&#x2F;c++库，包括Unity引擎，il2cpp后的c#逻辑，游戏项目的代码库</li>
+<li>VirtualFileSystem，主要是MEMFS</li>
+<li>HTTP fetch，从远端下载资源</li>
+<li>HTTP DOM API，查找元素，事件注册，加载scripts</li>
+</ul>
+<h2 id="2-5-方案可选组件"><a href="#2-5-方案可选组件" class="headerlink" title="2.5. 方案可选组件"></a>2.5. 方案可选组件</h2><ul>
+<li>WebSocket，连服务器，单机不用不影响</li>
+<li>IndexedDb，默认缺失相关组件会报错，可以通过初始配置关闭，关闭后相关文件（主要是PlayerPrefs）没有持久化（但不影响HTTP Cache，即通过上面HTTP fetch拿到的资源）。</li>
+<li>WebAudio，默认缺失相关组件会报错，可以在Unity编辑器里关闭。</li>
+</ul>
+<h1 id="3-深入JS源代码"><a href="#3-深入JS源代码" class="headerlink" title="3. 深入JS源代码"></a>3. 深入JS源代码</h1><p>下面会基于一个空工程的debug版js代码，回答下面几个问题</p>
+<ul>
+<li>各个部分如何初始化</li>
+<li>怎么启动帧循环</li>
+<li>事件处理如何触发</li>
+</ul>
+<p>示例代码由Unity2022.3.xx导出，部分输出文件名随输出目录改变，示例代码的输出目录为webgl。</p>
+<h2 id="3-1-Unity-Webgl平台输出文件"><a href="#3-1-Unity-Webgl平台输出文件" class="headerlink" title="3.1. Unity Webgl平台输出文件"></a>3.1. Unity Webgl平台输出文件</h2><p>部分文件名随输出目录改变，本文以webgl为例。</p>
+<table>
+<thead>
+<tr>
+<th>文件</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>index.html</td>
+<td>包含Canvas定义，渲染输出；脚本网页入口（相当于main函数入口）</td>
+</tr>
+<tr>
+<td>TemplateData&#x2F;</td>
+<td>网页模板资源，游戏主要是Canvas，网页上的资源没有也不影响，不重要</td>
+</tr>
+<tr>
+<td>Build&#x2F;webgl.loader.js</td>
+<td>加载framework.js, webgl.data，</td>
+</tr>
+<tr>
+<td>Build&#x2F;webgl.framework.js</td>
+<td>加载&#x2F;桥接wasm，有一js内存文件系统，事件转发，音频</td>
+</tr>
+<tr>
+<td>Build&#x2F;webgl.data</td>
+<td>打包Bundle外的数据文件，应该都在这里了</td>
+</tr>
+<tr>
+<td>Build&#x2F;webgl.wasm</td>
+<td>引擎+C#逻辑, 优化参考<a href="https://github.com/wechat-miniprogram/minigame-unity-webgl-transform">微信小游戏和相关文档</a>，太专业了，无出其右，对着做就行</td>
+</tr>
+</tbody></table>
+<h4 id="webgl-data"><a href="#webgl-data" class="headerlink" title="webgl.data"></a>webgl.data</h4><p>空的工程包含这些文件，就是Unity打包出来的全局的数据。之前折腾过Android的热更，知道这是对应asset&#x2F;bin&#x2F;Data下的子集，webgl版本没这方面的需求，没太关注这些文件。</p>
+<ul>
+<li>data.unity3d</li>
+<li>RuntimeInitializeOnLoads.json</li>
+<li>ScriptingAssemblies.json</li>
+<li>boot.config</li>
+<li>Il2CppData&#x2F;Metadata&#x2F;global-metadata.dat</li>
+<li>Resources&#x2F;unity_default_resources</li>
+</ul>
+<h2 id="3-2-启动流程"><a href="#3-2-启动流程" class="headerlink" title="3.2. 启动流程"></a>3.2. 启动流程</h2><p>下面会按启动流程，过一遍JS的源代码。帧循环的启动，操作响应事件的注册都在这里面，本章节开始的几个问题，就不另外再说了。<br>小游戏页面的加载从index.html开始，以拿到unityInstance结束，之后unity的帧循环开启。</p>
+<h3 id="3-2-1-index-html"><a href="#3-2-1-index-html" class="headerlink" title="3.2.1. index.html"></a>3.2.1. index.html</h3><p>index.html很简单，分为两部分：</p>
+<ul>
+<li>html元素，定义html页面元素，套模板（TemplateData&#x2F;）。</li>
+<li>另一部分是js脚本，完成系统的初始化。</li>
+</ul>
+<p>把啰嗦的部分去掉，html部分必须的只有canvas，游戏渲染输出必备，至少支持webgl Context（其他两种是2d和webgl2，2d不行，webgl2更新一些，后续还有webgpu，技术的更新还是很快的）。</p>
+<p>js部分也可以分成两部分，代码不多，这里直接贴代码：</p>
+<ul>
+<li><p>配置</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">var buildUrl = &quot;Build&quot;;</span><br><span class="line">var loaderUrl = buildUrl + &quot;/webgl.loader.js&quot;;</span><br><span class="line">var config = &#123;</span><br><span class="line">  dataUrl: buildUrl + &quot;/webgl.data&quot;,</span><br><span class="line">  frameworkUrl: buildUrl + &quot;/webgl.framework.js&quot;,</span><br><span class="line">  codeUrl: buildUrl + &quot;/webgl.wasm&quot;,</span><br><span class="line">  streamingAssetsUrl: &quot;StreamingAssets&quot;,</span><br><span class="line">  companyName: &quot;DefaultCompany&quot;,</span><br><span class="line">  productName: &quot;DefaultProduct&quot;,</span><br><span class="line">  productVersion: &quot;0.1&quot;,</span><br><span class="line">  showBanner: unityShowBanner,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>默认的配置看上去只是些很常规的配置，不能做太多的东西。其实这里面大有乾坤，配置的属性和值会被一项一项地复制到unityInstance的底层framework，能够开关功能甚至覆盖实现逻辑，留意相关的注释，比如</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">// To lower canvas resolution on mobile devices to gain some</span><br><span class="line">// performance, uncomment the following line:</span><br><span class="line">// config.devicePixelRatio = 1;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>加载启动脚本， 构造出unityInstance就ok了。这里的unityInstance是js和Unity c#逻辑层交互的关键，一般一个页面就一个，全局存一下。如果有多个（同个页面同时操控多个游戏实例，实在想不出应用的场景），可以拿key在全局变量存一下。Unity的加载脚本都是createElement的方式加载到全局作用域，import的方式得自己改改。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">var script = document.createElement(&quot;script&quot;);</span><br><span class="line">script.src = loaderUrl;</span><br><span class="line">script.onload = () =&gt; &#123;</span><br><span class="line">  createUnityInstance(canvas, config, (progress) =&gt; &#123;</span><br><span class="line">    progressBarFull.style.width = 100 * progress + &quot;%&quot;;</span><br><span class="line">        &#125;).then((unityInstance) =&gt; &#123;</span><br><span class="line">          loadingBar.style.display = &quot;none&quot;;</span><br><span class="line">          fullscreenButton.onclick = () =&gt; &#123;</span><br><span class="line">            unityInstance.SetFullscreen(1);</span><br><span class="line">          &#125;;</span><br><span class="line">        &#125;).catch((message) =&gt; &#123;</span><br><span class="line">          alert(message);</span><br><span class="line">        &#125;);</span><br><span class="line">      &#125;;</span><br><span class="line">document.body.appendChild(script);</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h3 id="3-2-2-加载webgl-loader-js"><a href="#3-2-2-加载webgl-loader-js" class="headerlink" title="3.2.2. 加载webgl.loader.js"></a>3.2.2. 加载webgl.loader.js</h3><p>loader.js全局定义了一个大方法：createUnityInstance，其他的林林总总都在这里面，index.html传入canvas和config，异步拿到unityInstance。文件前面定义大量函数和逻辑，入口在最后面。</p>
+<p>前面的函数和逻辑有几个重要的变量:</p>
+<ul>
+<li><p>Module, 后面的framework会以此变量去做初始化，初始化好后，这个变量就是framework。</p>
+</li>
+<li><p>config的转移，此前的Module定义的方法，可以在这里直接override，此后Unity也预留了一些判断，可以改变一些行为。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">for (var parameter in config)</span><br><span class="line">  Module[parameter] = config[parameter];</span><br></pre></td></tr></table></figure></li>
+<li><p>unityInstance本身，常用的主要是给C#发消息的SendMessage，Unity的iOS&#x2F;Android等各个平台都有，用过的看名字就知道。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">var unityInstance = &#123;</span><br><span class="line">  Module: Module,</span><br><span class="line">  SetFullscreen: ...</span><br><span class="line">  SendMessage: ...</span><br><span class="line">  Quit: ...</span><br><span class="line">  GetMemoryInfo: ...</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></li>
+<li><p>Module.SystemInfo，系统信息。</p>
+</li>
+</ul>
+<p>最后loadBuild开始加载framework和data，进度从0开始，成功后以1结束</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">return new Promise(function (resolve, reject) &#123;</span><br><span class="line">  if (!Module.SystemInfo.hasWebGL) &#123;</span><br><span class="line">    reject(&quot;Your browser does not support WebGL.&quot;);</span><br><span class="line">  &#125; else if (!Module.SystemInfo.hasWasm) &#123;</span><br><span class="line">    reject(&quot;Your browser does not support WebAssembly.&quot;);</span><br><span class="line">  &#125; else &#123;</span><br><span class="line">    Module.startupErrorHandler = reject;</span><br><span class="line">    onProgress(0);</span><br><span class="line">    Module.postRun.push(function () &#123;</span><br><span class="line">      onProgress(1);</span><br><span class="line">      delete Module.startupErrorHandler;</span><br><span class="line">      resolve(unityInstance);</span><br><span class="line">    &#125;);</span><br><span class="line">    loadBuild();</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+
+<p>按图索骥，最后的loadBuild定义如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">function loadBuild() &#123;</span><br><span class="line">  downloadFramework().then(function (unityFramework) &#123;</span><br><span class="line">    unityFramework(Module);</span><br><span class="line">  &#125;);</span><br><span class="line"></span><br><span class="line">  var dataPromise = downloadBinary(&quot;dataUrl&quot;);</span><br><span class="line">  Module.preRun.push(function () &#123;</span><br><span class="line">    Module.addRunDependency(&quot;dataUrl&quot;);</span><br><span class="line">    dataPromise.then(function (data) &#123;</span><br><span class="line">      var view = new DataView(data.buffer, data.byteOffset, data.byteLength);</span><br><span class="line">      ...</span><br><span class="line">      Module.removeRunDependency(&quot;dataUrl&quot;);</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上半部分异步加载webgl.framework.js，拿到初始化函数，传入Module初始化。</p>
+<p>后半部分preRun加载webgl.data，解析，构造内存文件。为什么要放preRun里面呢，因为前面的framework下载和初始化是异步的，内存文件系统是还没初始化好。</p>
+<h3 id="3-2-3-加载webgl-framework-js"><a href="#3-2-3-加载webgl-framework-js" class="headerlink" title="3.2.3. 加载webgl.framework.js"></a>3.2.3. 加载webgl.framework.js</h3><p>webgl.framework.js代码量很大，除了各种辅助类的接口外，大体有下面几大块：</p>
+<h4 id="音频"><a href="#音频" class="headerlink" title="音频"></a>音频</h4><p><a href="https://www.w3.org/TR/webaudio/">web的音频定义</a>很复杂，在我调试的这段时间（2023年），还碰到Safari内存泄漏的问题，虽然后续版本有修复，但总体来说各个移动平台的web音频缓存对游戏来说，不太适应，表现为占用内存偏大，缓存释放不及时。</p>
+<p>游戏中的音频虽然播放量大，杂，既有长的背景音，也有短的各种音效，但是播放的需求很简单，就是循环播放背景音+单次播放音效实例，复杂一点再调调各自音量，再复杂一点限制同一实例的个数。所以接入各个app原生的audio接口不复杂（我曾经想找一个audio context的polyfill工程，接上小游戏的audio接口，后来发现太复杂，不如直接接），接入后在Unity的原生音频就没用了，可以在设置里把Unity的音频给关了，再把这块代码裁剪掉。</p>
+<h4 id="文件系统"><a href="#文件系统" class="headerlink" title="文件系统"></a>文件系统</h4><p>文件系统应该是<a href="https://emscripten.org/docs/api_reference/Filesystem-API.html#">emcripten的实现</a>，非常轻巧，值得一读，原来内存文件系统可以这么做。</p>
+<ul>
+<li>MEMFS</li>
+<li>IDBFS</li>
+<li>FS</li>
+<li>SOCKFS</li>
+<li>DNS</li>
+<li>Linux C file api</li>
+</ul>
+<p>其中IDBFS会被用于存放持久化文件，没有用到IDBFS的太多特性。以DB存文件不算完美，纯属没其他办法的办法。Unity在初始化时预留了个扩展（如下），可以在配置里定义一个unityFileSystemInit方法，依葫芦画瓢把文件存其他地方（取代IDBFS）；或者就定义一个空方法，把PlayerPrefs数据存服务器。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">// Initialize the IndexedDB based file system. Module[&#x27;unityFileSystemInit&#x27;] allows</span><br><span class="line">// developers to override this with their own function, when they want to do cloud storage</span><br><span class="line">// instead.</span><br><span class="line">var unityFileSystemInit = Module[&#x27;unityFileSystemInit&#x27;] || function () &#123;</span><br><span class="line">  FS.mkdir(&#x27;/idbfs&#x27;);</span><br><span class="line">  FS.mount(IDBFS, &#123;&#125;, &#x27;/idbfs&#x27;);</span><br><span class="line">  ...</span><br><span class="line">&#125;;</span><br><span class="line">unityFileSystemInit();</span><br></pre></td></tr></table></figure>
+
+
+<h4 id="GL"><a href="#GL" class="headerlink" title="GL"></a>GL</h4><p>封装Canvas webgl Context的操作。</p>
+<h4 id="webgl-wasm初始化"><a href="#webgl-wasm初始化" class="headerlink" title="webgl.wasm初始化"></a>webgl.wasm初始化</h4><p>下面的代码太多，只能上图把关键的函数列出来：</p>
+<pre class="mermaid">flowchart TD
+    createWasm --> instantiateAsync
+    instantiateAsync -->D1{!FileURL and 支持流式实例化?}
+    D1--> |Y| F1[fetch] --> WebAssembly.instantiateStreaming --> receiveInstantiationResult
+    
+    D1--> |N| instantiateArrayBuffer  --> getBinaryPromise --> D2{FileURL?}
+        D2--> |Y| readAsync --> getBinary
+        D2--> |N| F2[fetch] --> getBinary --> WebAssembly.instantiate --> receiveInstantiationResult
+    
+    receiveInstantiationResult  --> receiveInstance  --> Init[Module.asm=...\n wasmMemory=...\n Module.asm.__wasm_call_ctors on init]</pre>
+
+<p>初始化后得到asm，再用createExportWrapper将asm的符号导出到Module变量，之后看到的_xxx函数基本都是wasm里的xxx，如_main即wasm里的main函数，作为这些后，静待游戏启动。</p>
+<h4 id="Browser及帧循环启动"><a href="#Browser及帧循环启动" class="headerlink" title="Browser及帧循环启动"></a>Browser及帧循环启动</h4><p>帧循环的相关数据结构为Browser.mainLoop，其启动比Unity内部帧循环早，帧号比Unity C#的帧号大。</p>
+<pre class="mermaid">flowchart TD
+    Module.preInit --> D1{config.noInitialRun?} --> |N| run --> preRun --> doRun --> initRuntime --> preMain --> callMain --> wasm.main --> _emscripten_set_main_loop --> setMainLoop --> init[init   Browser.mainLoop.runner] --> D2{fps>0} 
+    D2 --> |Y| timeout[_emscripten_set_main_loop_timing EM_TIMING_SETTIMEOUT] --> Browser.mainLoop.scheduler
+    D2 --> |N| raf[_emscripten_set_main_loop_timing EM_TIMING_RAF] --> Browser.mainLoop.scheduler</pre>
+
+<p>C#里的帧循环函数在main函数执行时传入，存在Browser.mainLoop.runner里。Browser.mainLoop.scheduler即启动下一帧的更新，如果定帧，则用浏览器的timeout函数触发下一帧更新；否则，则用浏览器的requestAnimationFrame触发下一帧更新。无论怎样，下一帧更新浏览器都会调用Browser.mainLoop.runner，在Browser.mainLoop.runner里，会调用wasm传入的main_loop方法，然后再Browser.mainLoop.scheduler，如此反复，帧循环就跑起来了。</p>
+<h3 id="JSEvents事件处理"><a href="#JSEvents事件处理" class="headerlink" title="JSEvents事件处理"></a>JSEvents事件处理</h3><pre class="mermaid">flowchart TD
+    callMain --> wasm.main --> wasm.InputInit --> _emscripten_set_xxx_callback_on_thread --> registerXXXEventCallback --> JSEvents.registerOrRemoveHandler --> event.target.addEventListener</pre>
+
+<p>事件处理也是在main初始化时，将相关处理函数注册到js层，通过JSEvents统一向浏览器注册事件，各层均有回调，事件发生时，顺着回调函数，调回C#。调回c#时，会构造buffer作为事件参数传入。</p>
+<h1 id="4-APP小游戏的接入"><a href="#4-APP小游戏的接入" class="headerlink" title="4. APP小游戏的接入"></a>4. APP小游戏的接入</h1><p>小游戏的接入，先接入一遍<a href="https://github.com/wechat-miniprogram/minigame-unity-webgl-transform">微信小游戏</a>，虽然微信重写了一遍JS部分代码，但是仍能站在巨人肩膀上，少走很多弯路。</p>
+<p>参考Unity必选和可选组件，也感谢开源社区，Github上有大量的替代组件，可行性的问题解决后，后其他的问题应该都是工作量的问题。</p>
+<ul>
+<li>webgl Context Canvas，需要</li>
+<li>WebAssembly，需要。</li>
+<li>VirtualFileSystem，有内存就行。</li>
+<li>HTTP fetch，需要。</li>
+<li>WebSocket，连接服务器需要，如果仅是跑进游戏，是不需要的。</li>
+<li>IndexedDb，用本地文件系统接入，效率更高。</li>
+<li>WebAudio，用app自己的音频系统接入，效率更高。</li>
+</ul>
+<h1 id="5-最后"><a href="#5-最后" class="headerlink" title="5. 最后"></a>5. 最后</h1><p>全部写完，其实也只写了个大概，希望能把脉络给展现出来，方便读者深入进去。</p>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
 	<div class="article-tag tagcloud">
 		<i class="icon-price-tags icon"></i>
 		<ul class="article-tag-list">
 			 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">c++</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">Unity WebGL 小游戏 wasm</a>
         		</li>
       		
 		</ul>
 	</div>
 
-          
+      
 
+      
+
+      
+        
+<div class="share-btn share-icons tooltip-left">
+  <div class="tooltip tooltip-east">
+    <span class="tooltip-item">
+      <a href="javascript:;" class="share-sns share-outer">
+        <i class="icon icon-share"></i>
+      </a>
+    </span>
+    <span class="tooltip-content">
+      <div class="share-wrap">
+        <div class="share-icons">
+          <a class="weibo share-sns" href="javascript:;" data-type="weibo">
+            <i class="icon icon-weibo"></i>
+          </a>
+          <a class="weixin share-sns wxFab" href="javascript:;" data-type="weixin">
+            <i class="icon icon-weixin"></i>
+          </a>
+          <a class="qq share-sns" href="javascript:;" data-type="qq">
+            <i class="icon icon-qq"></i>
+          </a>
+          <a class="douban share-sns" href="javascript:;" data-type="douban">
+            <i class="icon icon-douban"></i>
+          </a>
+          <a class="qzone share-sns" href="javascript:;" data-type="qzone">
+            <i class="icon icon-qzone"></i>
+          </a>
+          <a class="facebook share-sns" href="javascript:;" data-type="facebook">
+            <i class="icon icon-facebook"></i>
+          </a>
+          <a class="twitter share-sns" href="javascript:;" data-type="twitter">
+            <i class="icon icon-twitter"></i>
+          </a>
+          <a class="google share-sns" href="javascript:;" data-type="google">
+            <i class="icon icon-google"></i>
+          </a>
         </div>
-        <div class="clearfix"></div>
-    </header>
+      </div>
+    </span>
+  </div>
+</div>
+
+<div class="page-modal wx-share js-wx-box">
+    <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <div class="wx-qrcode">
+      <img src="//pan.baidu.com/share/qrcode?url=http://yoursite.com/2024/07/09/%E8%B5%B0%E8%BF%9BUnity%20WebGL%E6%8A%80%E6%9C%AF%E6%96%B9%E6%A1%88/" alt="微信分享二维码">
+    </div>
+</div>
+
+<div class="mask js-mask"></div>
+      
+      <div class="clearfix"></div>
+    </div>
   </div>
 </article>
+
+  
+<nav id="article-nav">
+  
+    <a href="/2025/06/20/wxWidget-wasm-demo/" id="article-nav-newer" class="article-nav-link-wrap">
+      <i class="icon-circle-left"></i>
+      <div class="article-nav-title">
+        
+          wxWidget WebAssembly demo
+        
+      </div>
+    </a>
   
   
-    </div></section>
+    <a href="/2024/06/20/llvm%20ADT%E4%B9%8B%E6%A0%88%E4%B8%8A%E5%AE%B9%E5%99%A8/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">llvm ADT之栈上容器</div>
+      <i class="icon-circle-right"></i>
+    </a>
+  
+</nav>
+
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+  
+  
   
 
-    
+  
+
+  
+
+  
+  <div id="gitment-ctn"></div> 
+<link rel="stylesheet" href="https://jjeejj.github.io/css/gitment.css">
+<script src="https://jjeejj.github.io/js/gitment.js"></script>
+<script>
+var gitment = new Gitment({
+  id: "Tue Jul 09 2024 19:32:10 GMT+0800",
+  owner: 'noodle1983',
+  repo: 'gitment-comments',
+  oauth: {
+    client_id: '972f3c4a589c8d3ecc20',
+    client_secret: '2992fa2ea0fa071faafd9e65e585051f08df0a86',
+  },
+})
+gitment.render('gitment-ctn')
+</script>
+  
 
 
           </div>
@@ -187,7 +477,7 @@
   <div class="outer">
     <div id="footer-info">
     	<div class="footer-left">
-    		&copy; 2024 Dong Lu
+    		&copy; 2025 Dong Lu
     	</div>
       	<div class="footer-right">
       		<a href="http://hexo.io/" target="_blank">Hexo</a>  Theme <a href="https://github.com/litten/hexo-theme-yilia" target="_blank">Yilia</a> by Litten
@@ -200,8 +490,8 @@
 	var yiliaConfig = {
 		mathjax: false,
 		isHome: false,
-		isPost: false,
-		isArchive: true,
+		isPost: true,
+		isArchive: false,
 		isTag: false,
 		isCategory: false,
 		open_in_new: false,
@@ -276,11 +566,11 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">server</a>
+                <a href="javascript:void(0)" class="js-tag color5">Unity Android APP il2cpp</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">Unity Plugin-nd</a>
+                <a href="javascript:void(0)" class="js-tag color2">server</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -288,23 +578,7 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">Unity Android APP il2cpp</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">private</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">putty-nd</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color1">Android NDK gdb</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">c++</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -312,7 +586,27 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">Unity WebGL 小游戏</a>
+                <a href="javascript:void(0)" class="js-tag color4">c++</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">putty-nd</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">wxWidget WebAssembly wasm</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">Unity Plugin-nd</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">Unity WebGL 小游戏 wasm</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">private</a>
               </li>
             
             <div class="clearfix"></div>

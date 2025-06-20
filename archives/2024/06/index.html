@@ -6,19 +6,14 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" >
   <link rel="dns-prefetch" href="http://yoursite.com">
-  <title>llvm ADT之栈上容器 | Noodle&#39;s blog</title>
+  <title>Archives: 2024/6 | Noodle&#39;s blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="TL;DRhttps:&#x2F;&#x2F;github.com&#x2F;noodle1983&#x2F;llvm-ADT 1. 简要模型栈上容器，其实也不太对，他其实是指预分配内存的一类容器，只是他通常作为临时变量在函数内使用，编译期就确定了大小，构造时不使用堆内存（new&#x2F;malloc），直接在栈上构建，随函数退出析构。大概的实现： 12345678910class XXX&#123;    &#x2F;&#x2F;1. 存储    ch">
-<meta property="og:type" content="article">
-<meta property="og:title" content="llvm ADT之栈上容器">
-<meta property="og:url" content="http://yoursite.com/2024/05/20/llvm%20ADT%E4%B9%8B%E6%A0%88%E4%B8%8A%E5%AE%B9%E5%99%A8/index.html">
+  <meta property="og:type" content="website">
+<meta property="og:title" content="Noodle&#39;s blog">
+<meta property="og:url" content="http://yoursite.com/archives/2024/06/index.html">
 <meta property="og:site_name" content="Noodle&#39;s blog">
-<meta property="og:description" content="TL;DRhttps:&#x2F;&#x2F;github.com&#x2F;noodle1983&#x2F;llvm-ADT 1. 简要模型栈上容器，其实也不太对，他其实是指预分配内存的一类容器，只是他通常作为临时变量在函数内使用，编译期就确定了大小，构造时不使用堆内存（new&#x2F;malloc），直接在栈上构建，随函数退出析构。大概的实现： 12345678910class XXX&#123;    &#x2F;&#x2F;1. 存储    ch">
 <meta property="og:locale">
-<meta property="article:published_time" content="2024-05-20T01:32:10.000Z">
-<meta property="article:modified_time" content="2024-05-20T03:15:09.573Z">
 <meta property="article:author" content="Dong Lu">
-<meta property="article:tag" content="c++">
 <meta name="twitter:card" content="summary">
   
     <link rel="alternative" href="/atom.xml" title="Noodle&#39;s blog" type="application/atom+xml">
@@ -129,88 +124,36 @@
             <canvas data-colors="#eaeaea" data-sectionHeight="100" data-contentId="js-content" id="myCanvas1" class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            <article id="post-llvm ADT之栈上容器" class="article article-type-post " itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
+            
   
-    <h1 class="article-title" itemprop="name">
-      llvm ADT之栈上容器
+  
+    
+    
+      
+      
+      <section class="archives-wrap">
+        <div class="archive-year-wrap">
+          <a href="/archives/2024" class="archive-year">2024</a>
+        </div>
+        <div class="archives">
+    
+    <article class="archive-article archive-type-post">
+  <div class="archive-article-inner">
+    <header class="archive-article-header">
+      	<div class="article-meta">
+	      	<a href="/2024/06/20/llvm%20ADT%E4%B9%8B%E6%A0%88%E4%B8%8A%E5%AE%B9%E5%99%A8/" class="archive-article-date">
+  	<time datetime="2024-06-20T01:32:10.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2024-06-20</time>
+</a>
+        </div>
+    	 
+  
+    <h1 itemprop="name">
+      <a class="archive-article-title" href="/2024/06/20/llvm%20ADT%E4%B9%8B%E6%A0%88%E4%B8%8A%E5%AE%B9%E5%99%A8/">llvm ADT之栈上容器</a>
     </h1>
   
 
-        
-        <a href="/2024/05/20/llvm%20ADT%E4%B9%8B%E6%A0%88%E4%B8%8A%E5%AE%B9%E5%99%A8/" class="archive-article-date">
-  	<time datetime="2024-05-20T01:32:10.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2024-05-20</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>TL;DR<br><a href="https://github.com/noodle1983/llvm-ADT">https://github.com/noodle1983/llvm-ADT</a></p>
-<h1 id="1-简要模型"><a href="#1-简要模型" class="headerlink" title="1. 简要模型"></a>1. 简要模型</h1><p>栈上容器，其实也不太对，他其实是指预分配内存的一类容器，只是他通常作为临时变量在函数内使用，编译期就确定了大小，构造时不使用堆内存（new&#x2F;malloc），直接在栈上构建，随函数退出析构。大概的实现：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">class XXX&#123;</span><br><span class="line">    //1. 存储</span><br><span class="line">    char storage[N];</span><br><span class="line">    </span><br><span class="line">    //2. 管理字段</span><br><span class="line">    ...</span><br><span class="line">    </span><br><span class="line">    //3. 算法</span><br><span class="line">&#125;;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>这样就比较好理解下面这句的内存分配了。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">void hello_world()&#123;</span><br><span class="line">    llvm::SmallString&lt;10&gt; str(&quot;hello&quot;);</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>这种情况也比较好理解：作为一个字段放在另外一个对象里去new一个对象，这段内存就不在栈上了。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">class ABC&#123;</span><br><span class="line">    llvm::SmallString&lt;16&gt; name;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">ABC* abc = new ABC() //&lt;- 这段内存</span><br></pre></td></tr></table></figure>
-
-<p>如果大小超过了预分配内存，会如何？如果超过了，会退化成std相应容器。</p>
-<h1 id="2-使用场景"><a href="#2-使用场景" class="headerlink" title="2. 使用场景"></a>2. 使用场景</h1><ul>
-<li>临时对象，用完就丢的场合，没必要做内存泄漏方面的校验和检查，减少内存分配器压力，对用着内存校验的堆分配器会有明显的改进。</li>
-</ul>
-<p>std平替容器</p>
-<table>
-<thead>
-<tr>
-<th>std</th>
-<th>栈容器</th>
-<th>补充说明</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>std::vector</td>
-<td>llvm::SmallVector</td>
-<td></td>
-</tr>
-<tr>
-<td>std::string</td>
-<td>llvm::SmallString</td>
-<td></td>
-</tr>
-<tr>
-<td>std::set</td>
-<td>llvm::SmallDenseSet</td>
-<td>对象个数限制2的n次幂</td>
-</tr>
-<tr>
-<td>std::map</td>
-<td>llvm::SmallDenseMap</td>
-<td>对象个数限制2的n次幂</td>
-</tr>
-</tbody></table>
-<p>2的n次幂的限制源于key的hash取Bucket index的Mask，改成mod应该能把他去掉，因为如果元素hash mask后是散列的，那么取余也是散列的。改了之后理论上会慢一点（但大多数时候不需要计较的那种）。我用的地方只有几处，没改。</p>
-<h1 id="3-源码"><a href="#3-源码" class="headerlink" title="3. 源码"></a>3. 源码</h1><p>源码在llvm的<a href="https://llvm.org/doxygen/dir_32453792af2ba70c54e3ccae3a790d1b.html">ADT目录</a>下, 和llvm其他代码有耦合。</p>
-<p>我把他做了剥离，参见<a href="https://github.com/noodle1983/llvm-ADT">https://github.com/noodle1983/llvm-ADT</a>，Linux&#x2F;Windows测试和使用没什么问题。<br>除了栈上容器，还有其他的一些bit容器，稀疏容器等好东西，我没用的上。</p>
-<p>用法参考源码里面的unittest，可以打开VS工程下个断点看看，Linux我直接集成进游戏工程了，没去折腾unittest。</p>
-<h1 id="4-背后的故事"><a href="#4-背后的故事" class="headerlink" title="4. 背后的故事"></a>4. 背后的故事</h1><p>吹牛B时间。</p>
-<p>我对它的认识还是刚毕业在爱立信的时候，做的第一个项目是基于Sun Solaris的，这个操作系统各方面的文档超全。在工作之余，一边读文档，一边拿项目做实验。印象很深的一个，是统计各个函数的总耗时，看看哪个函数比较耗，看看有什么改进的。结果出乎我的意料，最耗的函数，竟是std::string构造函数的内存分配，而且和第二名是数量级的差别。具体数据因历史久远就不可考了（当时的内存分配器比较弱，线程级的分配器因为有bug没开，估计加剧了这种差异），只是这个项目是一个电信的计费网关，没有密集的字符串处理，最多就是写日志和话单，所以当时印象深刻，却又束手无策，就惦记上了。</p>
-<p>在爱立信的第二个项目，一个http网关，我神奇地发现，项目自己实现了一个MyString对象，预分配的64字节的空间，超出后退化为std::string。使用过程中发现，栈上这么一个MyString对象，64字节就在栈上，大部分时候，字符串都很短小，因此不会像堆申请任何内存，随着函数的退出，栈的弹出，自然就析构释放了，十分的精巧。</p>
-<p>之后几年线程级内存分配器很快成熟，这块的消耗好像也不算什么了。仅在广州西山居的服务器后台见到，有种似曾相识的感觉。</p>
-<p>辗转到游雁游戏，后端用着一个纯c++的游戏服务器，没带任何的内存检查设施，遂开发环境挂上Address Sanitizer。不出意料，卡。100毫秒的掉帧监控发现内存分配和释放都卡，尤其是释放有一个校验内存合法性的循环十分卡。本着有困难要上，没有困难创造困难也要上的精神，想先把大量的临时字符串内存用预分配的方法去掉。再本着别人有，就不用自己做的精神在Google&#x2F;Github上搜。确实有一个SmallString，再朔源，发现是llvm的ADT(advanced data type)的单个文件剥离版。那段时间刚好在centos6上编译了最新的llvm，一看源码，我就乐了，不单止string有SmallString，vector&#x2F;set&#x2F;map都有相应的实现，和之前在爱立信看到的思路一样，超了就退化到std库，比较灵活的一点是预分配元素的个数可以通过模板参数提供。当然，还有其他的侵入式容器，bit相关容器等。</p>
-<p>好东西，只是这个库依赖于llvm的其他组件，遂做移植，裁剪，linux&#x2F;windows下可用。</p>
-
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
+        <div class="article-info info-on-right">
+          
 	<div class="article-tag tagcloud">
 		<i class="icon-price-tags icon"></i>
 		<ul class="article-tag-list">
@@ -222,122 +165,19 @@
 		</ul>
 	</div>
 
-      
+          
 
-      
-
-      
-        
-<div class="share-btn share-icons tooltip-left">
-  <div class="tooltip tooltip-east">
-    <span class="tooltip-item">
-      <a href="javascript:;" class="share-sns share-outer">
-        <i class="icon icon-share"></i>
-      </a>
-    </span>
-    <span class="tooltip-content">
-      <div class="share-wrap">
-        <div class="share-icons">
-          <a class="weibo share-sns" href="javascript:;" data-type="weibo">
-            <i class="icon icon-weibo"></i>
-          </a>
-          <a class="weixin share-sns wxFab" href="javascript:;" data-type="weixin">
-            <i class="icon icon-weixin"></i>
-          </a>
-          <a class="qq share-sns" href="javascript:;" data-type="qq">
-            <i class="icon icon-qq"></i>
-          </a>
-          <a class="douban share-sns" href="javascript:;" data-type="douban">
-            <i class="icon icon-douban"></i>
-          </a>
-          <a class="qzone share-sns" href="javascript:;" data-type="qzone">
-            <i class="icon icon-qzone"></i>
-          </a>
-          <a class="facebook share-sns" href="javascript:;" data-type="facebook">
-            <i class="icon icon-facebook"></i>
-          </a>
-          <a class="twitter share-sns" href="javascript:;" data-type="twitter">
-            <i class="icon icon-twitter"></i>
-          </a>
-          <a class="google share-sns" href="javascript:;" data-type="google">
-            <i class="icon icon-google"></i>
-          </a>
         </div>
-      </div>
-    </span>
-  </div>
-</div>
-
-<div class="page-modal wx-share js-wx-box">
-    <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
-    <p>扫一扫，分享到微信</p>
-    <div class="wx-qrcode">
-      <img src="//pan.baidu.com/share/qrcode?url=http://yoursite.com/2024/05/20/llvm%20ADT%E4%B9%8B%E6%A0%88%E4%B8%8A%E5%AE%B9%E5%99%A8/" alt="微信分享二维码">
-    </div>
-</div>
-
-<div class="mask js-mask"></div>
-      
-      <div class="clearfix"></div>
-    </div>
+        <div class="clearfix"></div>
+    </header>
   </div>
 </article>
-
-  
-<nav id="article-nav">
   
   
-    <a href="/2024/04/14/NavmeshMarker_README/" id="article-nav-older" class="article-nav-link-wrap">
-      <div class="article-nav-title">NavimeshMarker_ExportWithoutBake_Readme</div>
-      <i class="icon-circle-right"></i>
-    </a>
-  
-</nav>
-
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-  
-  
+    </div></section>
   
 
-  
-
-  
-
-  
-  <div id="gitment-ctn"></div> 
-<link rel="stylesheet" href="https://jjeejj.github.io/css/gitment.css">
-<script src="https://jjeejj.github.io/js/gitment.js"></script>
-<script>
-var gitment = new Gitment({
-  id: "Mon May 20 2024 09:32:10 GMT+0800",
-  owner: 'noodle1983',
-  repo: 'gitment-comments',
-  oauth: {
-    client_id: '972f3c4a589c8d3ecc20',
-    client_secret: '2992fa2ea0fa071faafd9e65e585051f08df0a86',
-  },
-})
-gitment.render('gitment-ctn')
-</script>
-  
+    
 
 
           </div>
@@ -347,7 +187,7 @@ gitment.render('gitment-ctn')
   <div class="outer">
     <div id="footer-info">
     	<div class="footer-left">
-    		&copy; 2024 Dong Lu
+    		&copy; 2025 Dong Lu
     	</div>
       	<div class="footer-right">
       		<a href="http://hexo.io/" target="_blank">Hexo</a>  Theme <a href="https://github.com/litten/hexo-theme-yilia" target="_blank">Yilia</a> by Litten
@@ -360,8 +200,8 @@ gitment.render('gitment-ctn')
 	var yiliaConfig = {
 		mathjax: false,
 		isHome: false,
-		isPost: true,
-		isArchive: false,
+		isPost: false,
+		isArchive: true,
 		isTag: false,
 		isCategory: false,
 		open_in_new: false,
@@ -436,11 +276,11 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">server</a>
+                <a href="javascript:void(0)" class="js-tag color5">Unity Android APP il2cpp</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">Unity Plugin-nd</a>
+                <a href="javascript:void(0)" class="js-tag color2">server</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -448,23 +288,7 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">Unity Android APP il2cpp</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">private</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">putty-nd</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color1">Android NDK gdb</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">c++</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -472,7 +296,27 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">Unity WebGL 小游戏</a>
+                <a href="javascript:void(0)" class="js-tag color4">c++</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">putty-nd</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">wxWidget WebAssembly wasm</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">Unity Plugin-nd</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">Unity WebGL 小游戏 wasm</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">private</a>
               </li>
             
             <div class="clearfix"></div>
